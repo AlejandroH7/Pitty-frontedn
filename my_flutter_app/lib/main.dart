@@ -10,6 +10,7 @@ import 'package:my_flutter_app/presentation/pages/materia_prima_detail_page.dart
 import 'package:my_flutter_app/presentation/pages/materia_prima_list_page.dart';
 import 'package:my_flutter_app/presentation/pages/materia_prima_page.dart';
 import 'presentation/pages/event_add_page.dart';
+import 'presentation/pages/event_detail_page.dart';
 import 'presentation/pages/event_list_page.dart';
 import 'presentation/pages/events_menu_page.dart';
 import 'presentation/pages/orders_add_page.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         '/eventos': (context) => const EventsMenuPage(),
         '/eventos/agregar': (context) => const EventAddPage(),
         '/eventos/lista': (context) => const EventListPage(),
+        '/eventos/detalle': (context) => const EventDetailPage(),
         '/inventario/materia-prima': (context) => const MateriaPrimaPage(),
         '/inventario/postres': (context) => const PostresPage(),
         '/inventario/materia-prima/agregar': (context) =>

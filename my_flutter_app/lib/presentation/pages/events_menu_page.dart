@@ -33,9 +33,8 @@ class EventsMenuPage extends StatelessWidget {
                       label: 'Agregar Evento',
                       filled: false,
                       trailingIcon: Icons.event_outlined,
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/eventos/agregar');
-                      },
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/eventos/agregar'),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -45,9 +44,8 @@ class EventsMenuPage extends StatelessWidget {
                       label: 'Ver Eventos',
                       filled: false,
                       trailingIcon: Icons.expand_more,
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/eventos/lista');
-                      },
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/eventos/lista'),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -56,9 +54,7 @@ class EventsMenuPage extends StatelessWidget {
                     child: CustomButton(
                       label: 'Volver',
                       filled: true,
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(height: 16),
