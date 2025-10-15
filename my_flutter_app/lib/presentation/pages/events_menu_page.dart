@@ -18,39 +18,47 @@ class EventsMenuPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   const SizedBox(height: 24),
                   Text(
                     'Eventos',
                     style: theme.textTheme.headlineLarge,
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
-                  Center(
-                    child: SizedBox(
-                      width: 220,
-                      child: CustomButton(
-                        label: 'Agregar Evento',
-                        filled: false,
-                        trailingIcon: Icons.event_outlined,
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/eventos/agregar');
-                        },
-                      ),
+                  SizedBox(
+                    width: 220,
+                    child: CustomButton(
+                      label: 'Agregar Evento',
+                      filled: false,
+                      trailingIcon: Icons.event_outlined,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/eventos/agregar');
+                      },
                     ),
                   ),
                   const SizedBox(height: 28),
-                  Center(
-                    child: SizedBox(
-                      width: 220,
-                      child: CustomButton(
-                        label: 'Ver Eventos',
-                        filled: false,
-                        trailingIcon: Icons.expand_more,
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/eventos/lista');
-                        },
-                      ),
+                  SizedBox(
+                    width: 220,
+                    child: CustomButton(
+                      label: 'Ver Eventos',
+                      filled: false,
+                      trailingIcon: Icons.expand_more,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/eventos/lista');
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: 220,
+                    child: CustomButton(
+                      label: 'Volver',
+                      filled: true,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
