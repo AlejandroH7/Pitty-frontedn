@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/core/di/injector.dart';
 import 'package:my_flutter_app/core/utils/constants.dart';
-import 'package:my_flutter_app/presentation/pages/events_page.dart';
 import 'package:my_flutter_app/presentation/pages/home_page.dart';
 import 'package:my_flutter_app/presentation/pages/inventory_page.dart';
 import 'package:my_flutter_app/presentation/pages/login_page.dart';
@@ -10,6 +9,9 @@ import 'package:my_flutter_app/presentation/pages/materia_prima_add_page.dart';
 import 'package:my_flutter_app/presentation/pages/materia_prima_detail_page.dart';
 import 'package:my_flutter_app/presentation/pages/materia_prima_list_page.dart';
 import 'package:my_flutter_app/presentation/pages/materia_prima_page.dart';
+import 'presentation/pages/event_add_page.dart';
+import 'presentation/pages/event_list_page.dart';
+import 'presentation/pages/events_menu_page.dart';
 import 'presentation/pages/orders_add_page.dart';
 import 'presentation/pages/orders_detail_page.dart';
 import 'presentation/pages/orders_list_page.dart';
@@ -54,7 +56,9 @@ class MyApp extends StatelessWidget {
         '/pedidos/agregar': (context) => const OrdersAddPage(),
         '/pedidos/lista': (context) => const OrdersListPage(),
         '/pedidos/detalle': (context) => const OrdersDetailPage(),
-        '/eventos': (context) => const EventsPage(),
+        '/eventos': (context) => const EventsMenuPage(),
+        '/eventos/agregar': (context) => const EventAddPage(),
+        '/eventos/lista': (context) => const EventListPage(),
         '/inventario/materia-prima': (context) => const MateriaPrimaPage(),
         '/inventario/postres': (context) => const PostresPage(),
         '/inventario/materia-prima/agregar': (context) =>
