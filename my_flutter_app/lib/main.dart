@@ -1,78 +1,64 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/core/di/injector.dart';
-import 'package:my_flutter_app/core/utils/constants.dart';
-import 'package:my_flutter_app/presentation/pages/home_page.dart';
-import 'package:my_flutter_app/presentation/pages/inventory_page.dart';
-import 'package:my_flutter_app/presentation/pages/login_page.dart';
-import 'package:my_flutter_app/presentation/pages/materia_prima_add_page.dart';
-import 'package:my_flutter_app/presentation/pages/materia_prima_detail_page.dart';
-import 'package:my_flutter_app/presentation/pages/materia_prima_list_page.dart';
-import 'package:my_flutter_app/presentation/pages/materia_prima_page.dart';
-import 'presentation/pages/event_add_page.dart';
-import 'presentation/pages/event_detail_page.dart';
-import 'presentation/pages/event_list_page.dart';
-import 'presentation/pages/events_menu_page.dart';
-import 'presentation/pages/orders_add_page.dart';
-import 'presentation/pages/orders_detail_page.dart';
-import 'presentation/pages/orders_list_page.dart';
-import 'presentation/pages/orders_menu_page.dart';
-import 'package:my_flutter_app/presentation/pages/postre_detail_page.dart';
-import 'package:my_flutter_app/presentation/pages/postres_add_page.dart';
-import 'package:my_flutter_app/presentation/pages/postres_list_page.dart';
-import 'package:my_flutter_app/presentation/pages/postres_page.dart';
+import 'package:provider/provider.dart';
+
+import 'core/theme/app_theme.dart';
+import 'data/repositories/categorias_repository.dart';
+import 'data/repositories/categorias_repository_mem.dart';
+import 'data/repositories/clientes_repository.dart';
+import 'data/repositories/clientes_repository_mem.dart';
+import 'data/repositories/pedidos_repository.dart';
+import 'data/repositories/pedidos_repository_mem.dart';
+import 'data/repositories/postres_repository.dart';
+import 'data/repositories/postres_repository_mem.dart';
+import 'providers/carrito_provider.dart';
+import 'providers/categorias_provider.dart';
+import 'providers/clientes_provider.dart';
+import 'providers/postres_provider.dart';
+import 'routes/app_router.dart';
 
 void main() {
-  Injector.init();
-  runApp(const MyApp());
+  runApp(const PittyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PittyApp extends StatelessWidget {
+  const PittyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final lightScheme = ColorScheme.fromSeed(seedColor: seedColor);
-    final darkScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: Brightness.dark,
-    );
-
-    return MaterialApp(
-      title: kAppName,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: lightScheme,
+    final router = AppRouter();
+    return MultiProvider(
+      providers: [
+        Provider<ClientesRepository>(create: (_) => ClientesRepositoryMem()),
+        Provider<CategoriasRepository>(
+            create: (_) => CategoriasRepositoryMem()),
+        Provider<PostresRepository>(create: (_) => PostresRepositoryMem()),
+        Provider<PedidosRepository>(create: (_) => PedidosRepositoryMem()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ClientesProvider(context.read<ClientesRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              CategoriasProvider(context.read<CategoriasRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              PostresProvider(context.read<PostresRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              CarritoProvider(context.read<PedidosRepository>()),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Pitty Pastelería',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        initialRoute: AppRouter.welcome,
+        onGenerateRoute: router.onGenerateRoute,
       ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: darkScheme,
-      ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginPage(),
-        '/home': (context) => const HomePage(),
-        '/inventario': (context) => const InventoryPage(),
-        '/pedidos': (context) => const OrdersMenuPage(),
-        '/pedidos/agregar': (context) => const OrdersAddPage(),
-        '/pedidos/lista': (context) => const OrdersListPage(),
-        '/pedidos/detalle': (context) => const OrdersDetailPage(),
-        '/eventos': (context) => const EventsMenuPage(),
-        '/eventos/agregar': (context) => const EventAddPage(),
-        '/eventos/lista': (context) => const EventListPage(),
-        '/eventos/detalle': (context) => const EventDetailPage(),
-        '/inventario/materia-prima': (context) => const MateriaPrimaPage(),
-        '/inventario/postres': (context) => const PostresPage(),
-        '/inventario/materia-prima/agregar': (context) =>
-            const MateriaPrimaAddPage(),
-        '/inventario/materia-prima/lista': (context) =>
-            const MateriaPrimaListPage(),
-        '/inventario/materia-prima/detalle': (context) =>
-            const MateriaPrimaDetailPage(),
-        '/inventario/postres/agregar': (context) => const PostresAddPage(),
-        '/inventario/postres/lista': (context) => const PostresListPage(),
-        '/inventario/postres/detalle': (context) => const PostreDetailPage(),
-      },
     );
   }
 }
