@@ -19,7 +19,7 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _telefonoController = TextEditingController();
-  final _correoController = TextEditingController();
+  final _notasController = TextEditingController();
   bool _initialized = false;
 
   @override
@@ -33,7 +33,7 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
         if (existente != null) {
           _nombreController.text = existente.nombre;
           _telefonoController.text = existente.telefono ?? '';
-          _correoController.text = existente.correo ?? '';
+          _notasController.text = existente.notas ?? '';
         }
       }
     }
@@ -43,7 +43,7 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
   void dispose() {
     _nombreController.dispose();
     _telefonoController.dispose();
-    _correoController.dispose();
+    _notasController.dispose();
     super.dispose();
   }
 
@@ -79,7 +79,7 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
               const SizedBox(height: 16),
               AppTextField(
                 controller: _telefonoController,
-                label: 'Tel√©fono',
+                label: 'TelÈfono',
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.next,
                 validator: (value) {
@@ -88,26 +88,17 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
                   }
                   final pattern = RegExp(r'^[- +()0-9]{6,20}$');
                   if (!pattern.hasMatch(value.trim())) {
-                    return 'Formato de tel√©fono no v√°lido';
+                    return 'Formato de telÈfono no v·lido';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               AppTextField(
-                controller: _correoController,
-                label: 'Correo electr√≥nico',
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return null;
-                  }
-                  final correo = value.trim();
-                  if (!correo.contains('@') || !correo.contains('.')) {
-                    return 'Correo no v√°lido';
-                  }
-                  return null;
-                },
+                controller: _notasController,
+                label: 'Notas',
+                keyboardType: TextInputType.multiline,
+                maxLines: 4,
               ),
               const SizedBox(height: 24),
               AppPrimaryButton(
@@ -137,7 +128,7 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
       id: widget.clienteId,
       nombre: _nombreController.text,
       telefono: _telefonoController.text,
-      correo: _correoController.text,
+      notas: _notasController.text,
     );
     if (!mounted) return;
     if (exito) {

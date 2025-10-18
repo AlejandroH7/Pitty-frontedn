@@ -6,7 +6,6 @@ import '../../presentation/shared/dialogs.dart';
 import '../../presentation/shared/empty_view.dart';
 import '../../presentation/shared/loading_view.dart';
 import '../../presentation/shared/snackbars.dart';
-import '../../providers/categorias_provider.dart';
 import '../../providers/postres_provider.dart';
 import '../../routes/app_router.dart';
 
@@ -35,8 +34,8 @@ class PostresListPage extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text('Nuevo postre'),
       ),
-      body: Consumer2<PostresProvider, CategoriasProvider>(
-        builder: (context, postresProvider, categoriasProvider, _) {
+      body: Consumer<PostresProvider>(
+        builder: (context, postresProvider, _) {
           if (postresProvider.isLoading) {
             return const LoadingView();
           }
@@ -47,16 +46,12 @@ class PostresListPage extends StatelessWidget {
             return const EmptyView(message: 'No hay postres registrados');
           }
 
-          final categorias = {
-            for (final cat in categoriasProvider.categorias) cat.id: cat.nombre
-          };
-
           return Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: AppSearchField(
-                  hintText: 'Buscar postresâ€¦',
+                  hintText: 'Buscar postres…',
                   onChanged: postresProvider.buscar,
                 ),
               ),
@@ -67,11 +62,11 @@ class PostresListPage extends StatelessWidget {
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       final postre = postresProvider.postres[index];
-                      final categoriaNombre =
-                          categorias[postre.categoriaId] ?? 'Sin categorÃ­a';
                       return ListTile(
                         title: Text(postre.nombre),
-                        subtitle: Text(categoriaNombre),
+                        subtitle: Text(
+                          '${postre.porciones} porciones · ${postre.activo ? 'Disponible' : 'Inactivo'}',
+                        ),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -115,7 +110,7 @@ class PostresListPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                        'PÃ¡gina ${postresProvider.currentPage + 1} de ${postresProvider.totalPages}'),
+                        'Página ${postresProvider.currentPage + 1} de ${postresProvider.totalPages}'),
                     Row(
                       children: [
                         IconButton(
@@ -138,7 +133,7 @@ class PostresListPage extends StatelessWidget {
               if (postresProvider.isSaving)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
-                  child: Text('Guardandoâ€¦',
+                  child: Text('Guardando…',
                       style: TextStyle(fontStyle: FontStyle.italic)),
                 ),
             ],
@@ -169,7 +164,7 @@ class PostresListPage extends StatelessWidget {
         final confirmed = await showConfirmDeleteDialog(
           context: context,
           title: 'Eliminar postre',
-          message: 'Â¿Deseas eliminar este postre?',
+          message: '¿Deseas eliminar este postre?',
         );
         if (!confirmed) return;
         final success =

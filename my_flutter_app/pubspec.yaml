@@ -1,20 +1,2 @@
-name: my_flutter_app
-description: "Pitty frontend base project."
-version: 1.0.0+1
-
-environment:
-  sdk: ">=3.0.0 <4.0.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
-  provider: ^6.1.2
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/images/
+name: my_flutter_appdescription: "Pitty frontend base project."version: 1.0.0+1environment:  sdk: ">=3.0.0 <4.0.0"dependencies:  flutter:    sdk: flutter  provider: ^6.1.2
+  http: ^1.2.0dev_dependencies:  flutter_test:    sdk: flutterflutter:  uses-material-design: true  assets:    - assets/images/

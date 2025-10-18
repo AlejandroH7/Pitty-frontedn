@@ -22,6 +22,7 @@ class ClientesProvider extends ChangeNotifier {
   bool get isSaving => _isSaving;
   String? get error => _error;
   List<Cliente> get clientes => List.unmodifiable(_filtrados);
+  List<Cliente> get todosLosClientes => List.unmodifiable(_clientes);
   int get currentPage => _currentPage;
   int get pageSize => _pageSize;
   bool get hasNextPage => ((_currentPage + 1) * _pageSize) < _totalFiltrados;
@@ -74,25 +75,35 @@ class ClientesProvider extends ChangeNotifier {
     int? id,
     required String nombre,
     String? telefono,
-    String? correo,
+    String? notas,
   }) async {
     _isSaving = true;
     _error = null;
     notifyListeners();
+    final trimmedNombre = nombre.trim();
+    final trimmedTelefono = telefono?.trim();
+    final trimmedNotas = notas?.trim();
+    final telefonoValue =
+        (trimmedTelefono == null || trimmedTelefono.isEmpty)
+            ? null
+            : trimmedTelefono;
+    final notasValue = (trimmedNotas == null || trimmedNotas.isEmpty)
+        ? null
+        : trimmedNotas;
     try {
       if (id == null) {
         final creado = await _repository.crear(
-          nombre: nombre,
-          telefono: telefono,
-          correo: correo,
+          nombre: trimmedNombre,
+          telefono: telefonoValue,
+          notas: notasValue,
         );
         _clientes.add(creado);
       } else {
         final actualizado = await _repository.actualizar(
           id: id,
-          nombre: nombre,
-          telefono: telefono,
-          correo: correo,
+          nombre: trimmedNombre,
+          telefono: telefonoValue,
+          notas: notasValue,
         );
         final index = _clientes.indexWhere((c) => c.id == id);
         if (index != -1) {
@@ -139,8 +150,12 @@ class ClientesProvider extends ChangeNotifier {
   void _applyFilters() {
     Iterable<Cliente> resultado = _clientes;
     if (_search.isNotEmpty) {
+      final lower = _search.toLowerCase();
       resultado = resultado.where(
-        (c) => c.nombre.toLowerCase().contains(_search.toLowerCase()),
+        (c) =>
+            c.nombre.toLowerCase().contains(lower) ||
+            (c.telefono?.toLowerCase().contains(lower) ?? false) ||
+            (c.notas?.toLowerCase().contains(lower) ?? false),
       );
     }
     final lista = resultado.toList();

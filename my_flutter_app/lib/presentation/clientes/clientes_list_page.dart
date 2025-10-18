@@ -57,7 +57,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: AppSearchField(
-                  hintText: 'Buscar por nombreâ€¦',
+                  hintText: 'Buscar por nombre, teléfono o notas…',
                   onChanged: provider.buscar,
                 ),
               ),
@@ -74,9 +74,9 @@ class _ClientesListPageState extends State<ClientesListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (cliente.telefono != null)
-                              Text('TelÃ©fono: ${cliente.telefono}'),
-                            if (cliente.correo != null)
-                              Text('Correo: ${cliente.correo}'),
+                              Text('Teléfono: ${cliente.telefono}'),
+                            if (cliente.notas != null && cliente.notas!.isNotEmpty)
+                              Text('Notas: ${cliente.notas}'),
                           ],
                         ),
                         trailing: PopupMenuButton<String>(
@@ -110,7 +110,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                        'PÃ¡gina ${provider.currentPage + 1} de ${provider.totalPages}'),
+                        'Página ${provider.currentPage + 1} de ${provider.totalPages}'),
                     Row(
                       children: [
                         IconButton(
@@ -132,7 +132,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
               if (provider.isSaving)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
-                  child: Text('Guardandoâ€¦',
+                  child: Text('Guardando…',
                       style: TextStyle(fontStyle: FontStyle.italic)),
                 ),
             ],
@@ -162,7 +162,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
         final confirmed = await showConfirmDeleteDialog(
           context: context,
           title: 'Eliminar cliente',
-          message: 'Â¿Deseas eliminar este cliente?',
+          message: '¿Deseas eliminar este cliente?',
         );
         if (!confirmed) return;
         final success =

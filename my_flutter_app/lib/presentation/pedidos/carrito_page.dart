@@ -18,7 +18,7 @@ class CarritoPage extends StatelessWidget {
       body: Consumer<CarritoProvider>(
         builder: (context, provider, _) {
           if (provider.items.isEmpty) {
-            return const EmptyView(message: 'Agrega postres desde el catÃ¡logo');
+            return const EmptyView(message: 'Agrega postres desde el catálogo');
           }
           return Column(
             children: [
@@ -28,12 +28,13 @@ class CarritoPage extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 0),
                   itemBuilder: (context, index) {
                     final item = provider.items[index];
+                    final nombre =
+                        item.postre?.nombre ?? item.postreNombre ?? 'Postre';
+                    final precio = item.postre?.precio ?? item.precioUnitario;
                     return ListTile(
-                      title: Text(item.postre.nombre),
-                      subtitle:
-                          Text('Q${item.postre.precio.toStringAsFixed(2)} c/u'),
-                      trailing: _QuantitySelector(
-                          itemId: item.postre.id, cantidad: item.cantidad),
+                      title: Text(nombre),
+                      subtitle: Text('Q${precio.toStringAsFixed(2)} c/u'),
+                      trailing: _QuantitySelector(itemId: item.postreId),
                     );
                   },
                 ),
@@ -63,33 +64,34 @@ class CarritoPage extends StatelessWidget {
 }
 
 class _QuantitySelector extends StatelessWidget {
-  const _QuantitySelector({required this.itemId, required this.cantidad});
+  const _QuantitySelector({required this.itemId});
 
   final int itemId;
-  final int cantidad;
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<CarritoProvider>();
+    final item = provider.items.firstWhere((e) => e.postreId == itemId);
+    final postre = item.postre;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.remove_circle_outline),
-          onPressed: () {
-            final item =
-                provider.items.firstWhere((e) => e.postre.id == itemId);
-            provider.actualizarCantidad(item.postre, item.cantidad - 1);
-          },
+          onPressed: postre == null
+              ? null
+              : () {
+                  provider.actualizarCantidad(postre, item.cantidad - 1);
+                },
         ),
-        Text('$cantidad'),
+        Text('${item.cantidad}'),
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
-          onPressed: () {
-            final item =
-                provider.items.firstWhere((e) => e.postre.id == itemId);
-            provider.actualizarCantidad(item.postre, item.cantidad + 1);
-          },
+          onPressed: postre == null
+              ? null
+              : () {
+                  provider.actualizarCantidad(postre, item.cantidad + 1);
+                },
         ),
         IconButton(
           icon: const Icon(Icons.delete_outline),

@@ -16,4 +16,18 @@ class Categoria {
       nombre: nombre ?? this.nombre,
     );
   }
+
+  factory Categoria.fromJson(Map<String, dynamic> json) {
+    return Categoria(
+      id: (json['id'] as num).toInt(),
+      nombre: json['nombre'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nombre': nombre,
+    };
+  }
 }

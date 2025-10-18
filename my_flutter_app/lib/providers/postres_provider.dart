@@ -72,31 +72,29 @@ class PostresProvider extends ChangeNotifier {
     int? id,
     required String nombre,
     required double precio,
-    int? categoriaId,
-    String? descripcion,
-    String? imagenUrl,
+    required int porciones,
+    required bool activo,
   }) async {
     _isSaving = true;
     _error = null;
     notifyListeners();
+    final trimmedNombre = nombre.trim();
     try {
       if (id == null) {
         final creado = await _repository.crear(
-          nombre: nombre,
+          nombre: trimmedNombre,
           precio: precio,
-          categoriaId: categoriaId,
-          descripcion: descripcion,
-          imagenUrl: imagenUrl,
+          porciones: porciones,
+          activo: activo,
         );
         _postres.add(creado);
       } else {
         final actualizado = await _repository.actualizar(
           id: id,
-          nombre: nombre,
+          nombre: trimmedNombre,
           precio: precio,
-          categoriaId: categoriaId,
-          descripcion: descripcion,
-          imagenUrl: imagenUrl,
+          porciones: porciones,
+          activo: activo,
         );
         final index = _postres.indexWhere((p) => p.id == id);
         if (index != -1) {
@@ -143,8 +141,9 @@ class PostresProvider extends ChangeNotifier {
   void _applyFilters() {
     Iterable<Postre> resultado = _postres;
     if (_search.isNotEmpty) {
+      final lower = _search.toLowerCase();
       resultado = resultado.where(
-        (p) => p.nombre.toLowerCase().contains(_search.toLowerCase()),
+        (p) => p.nombre.toLowerCase().contains(lower),
       );
     }
     final lista = resultado.toList();

@@ -1,4 +1,4 @@
-import '../../data/models/cliente.dart';
+import '../models/cliente.dart';
 
 abstract class ClientesRepository {
   Future<List<Cliente>> obtenerTodos();
@@ -6,13 +6,13 @@ abstract class ClientesRepository {
   Future<Cliente> crear({
     required String nombre,
     String? telefono,
-    String? correo,
+    String? notas,
   });
   Future<Cliente> actualizar({
     required int id,
     required String nombre,
     String? telefono,
-    String? correo,
+    String? notas,
   });
   Future<void> eliminar(int id);
 }

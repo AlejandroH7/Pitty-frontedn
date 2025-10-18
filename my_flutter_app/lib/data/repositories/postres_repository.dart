@@ -6,17 +6,15 @@ abstract class PostresRepository {
   Future<Postre> crear({
     required String nombre,
     required double precio,
-    int? categoriaId,
-    String? descripcion,
-    String? imagenUrl,
+    required int porciones,
+    required bool activo,
   });
   Future<Postre> actualizar({
     required int id,
     required String nombre,
     required double precio,
-    int? categoriaId,
-    String? descripcion,
-    String? imagenUrl,
+    required int porciones,
+    required bool activo,
   });
   Future<void> eliminar(int id);
 }

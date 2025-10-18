@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../presentation/shared/snackbars.dart';
 import '../../providers/carrito_provider.dart';
+import '../../providers/clientes_provider.dart';
 import '../../routes/app_router.dart';
 
 class ConfirmacionPedidoPage extends StatefulWidget {
@@ -14,6 +15,8 @@ class ConfirmacionPedidoPage extends StatefulWidget {
 
 class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
   final _notasController = TextEditingController();
+  DateTime _fechaEntrega = DateTime.now().add(const Duration(hours: 24));
+  int? _clienteSeleccionado;
 
   @override
   void dispose() {
@@ -24,6 +27,8 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CarritoProvider>();
+    final clientes =
+        context.watch<ClientesProvider>().todosLosClientes;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Confirmar pedido'),
@@ -33,6 +38,34 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            DropdownButtonFormField<int?>(
+              decoration: const InputDecoration(
+                labelText: 'Cliente (opcional)',
+              ),
+              value: _clienteSeleccionado,
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Sin cliente asignado'),
+                ),
+                ...clientes.map(
+                  (cliente) => DropdownMenuItem<int?>(
+                    value: cliente.id,
+                    child: Text(cliente.nombre),
+                  ),
+                ),
+              ],
+              onChanged: (value) => setState(() => _clienteSeleccionado = value),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Fecha de entrega'),
+              subtitle: Text(_formatDate(_fechaEntrega)),
+              trailing: const Icon(Icons.calendar_today_outlined),
+              onTap: _seleccionarFecha,
+            ),
+            const SizedBox(height: 16),
             Text('Resumen', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             Expanded(
@@ -41,9 +74,9 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
                 itemBuilder: (context, index) {
                   final item = provider.items[index];
                   return ListTile(
-                    title: Text(item.postre.nombre),
+                    title: Text(item.postreNombre ?? item.postre?.nombre ?? ''),
                     subtitle: Text('Cantidad: ${item.cantidad}'),
-                    trailing: Text('Q${item.subtotal.toStringAsFixed(2)}'),
+                    trailing: Text('Q${item.total.toStringAsFixed(2)}'),
                   );
                 },
               ),
@@ -69,7 +102,7 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
                     )
                   : const Icon(Icons.check_circle_outline),
               label: Text(
-                  provider.isProcessing ? 'Procesandoâ€¦' : 'Confirmar pedido'),
+                  provider.isProcessing ? 'Procesando…' : 'Confirmar pedido'),
             ),
             if (provider.error != null)
               Padding(
@@ -85,12 +118,41 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
     );
   }
 
+  Future<void> _seleccionarFecha() async {
+    final fechaActual = _fechaEntrega;
+    final fechaSeleccionada = await showDatePicker(
+      context: context,
+      initialDate: fechaActual,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (fechaSeleccionada == null) return;
+    final horaSeleccionada = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(fechaActual),
+    );
+    if (horaSeleccionada == null) return;
+    setState(() {
+      _fechaEntrega = DateTime(
+        fechaSeleccionada.year,
+        fechaSeleccionada.month,
+        fechaSeleccionada.day,
+        horaSeleccionada.hour,
+        horaSeleccionada.minute,
+      );
+    });
+  }
+
   Future<void> _confirmar() async {
     final provider = context.read<CarritoProvider>();
-    final exito = await provider.confirmarPedido(notas: _notasController.text);
+    final exito = await provider.confirmarPedido(
+      notas: _notasController.text,
+      clienteId: _clienteSeleccionado,
+      fechaEntrega: _fechaEntrega,
+    );
     if (!mounted) return;
     if (exito) {
-      final mensaje = provider.ultimoMensaje ?? 'Pedido creado (simulado)';
+      final mensaje = provider.ultimoMensaje ?? 'Pedido creado';
       showSuccessSnackBar(context, mensaje);
       Navigator.popUntil(
           context, ModalRoute.withName(AppRouter.pedidosCatalogo));
@@ -98,5 +160,9 @@ class _ConfirmacionPedidoPageState extends State<ConfirmacionPedidoPage> {
       final error = provider.error ?? 'No fue posible confirmar el pedido';
       showErrorSnackBar(context, error);
     }
+  }
+
+  String _formatDate(DateTime value) {
+    return value.toLocal().toString().split('.').first;
   }
 }

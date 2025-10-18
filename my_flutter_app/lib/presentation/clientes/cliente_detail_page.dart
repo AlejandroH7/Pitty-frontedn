@@ -19,7 +19,9 @@ class ClienteDetailPage extends StatelessWidget {
             : _ClienteDetailModel(
                 nombre: data.nombre,
                 telefono: data.telefono,
-                correo: data.correo,
+                notas: data.notas,
+                createdAt: data.createdAt,
+                updatedAt: data.updatedAt,
               );
       },
     );
@@ -43,7 +45,7 @@ class ClienteDetailPage extends StatelessWidget {
         ],
       ),
       body: cliente == null
-          ? const Center(child: Text('No se encontró el cliente'))
+          ? const Center(child: Text('No se encontr� el cliente'))
           : Padding(
               padding: const EdgeInsets.all(24),
               child: Card(
@@ -57,17 +59,22 @@ class ClienteDetailPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
-                      _buildRow(
-                          'Teléfono', cliente.telefono ?? 'No registrado'),
+                      _buildRow('Tel�fono', cliente.telefono ?? 'No registrado'),
                       const SizedBox(height: 8),
-                      _buildRow('Correo', cliente.correo ?? 'No registrado'),
-                      const SizedBox(height: 32),
-                      Text(
-                        'Última actualización simulada: ${DateTime.now().toLocal()}'
-                            .split('.')
-                            .first,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      _buildRow('Notas', cliente.notas?.isNotEmpty == true
+                          ? cliente.notas!
+                          : 'Sin notas'),
+                      const SizedBox(height: 24),
+                      if (cliente.createdAt != null)
+                        Text(
+                          'Creado: ${_formatDate(cliente.createdAt!)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      if (cliente.updatedAt != null)
+                        Text(
+                          'Actualizado: ${_formatDate(cliente.updatedAt!)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                     ],
                   ),
                 ),
@@ -78,6 +85,7 @@ class ClienteDetailPage extends StatelessWidget {
 
   Widget _buildRow(String label, String value) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 2,
@@ -93,16 +101,24 @@ class ClienteDetailPage extends StatelessWidget {
       ],
     );
   }
+
+  String _formatDate(DateTime value) {
+    return value.toLocal().toString().split('.').first;
+  }
 }
 
 class _ClienteDetailModel {
   const _ClienteDetailModel({
     required this.nombre,
     this.telefono,
-    this.correo,
+    this.notas,
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String nombre;
   final String? telefono;
-  final String? correo;
+  final String? notas;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 }

@@ -18,17 +18,17 @@ class CarritoProvider extends ChangeNotifier {
   bool get isProcessing => _isProcessing;
   String? get error => _error;
   String? get ultimoMensaje => _ultimoMensaje;
-  int get totalCantidad => _items.values
-      .fold(0, (previousValue, element) => previousValue + element.cantidad);
-  double get total => _items.values
-      .fold(0, (previousValue, element) => previousValue + element.subtotal);
+  int get totalCantidad =>
+      _items.values.fold(0, (value, item) => value + item.cantidad);
+  double get total =>
+      _items.values.fold(0, (value, item) => value + item.total);
 
   void agregarPostre(Postre postre) {
-    final item = _items[postre.id];
-    if (item == null) {
-      _items[postre.id] = PedidoItem(postre: postre, cantidad: 1);
+    final existente = _items[postre.id];
+    if (existente == null) {
+      _items[postre.id] = PedidoItem.fromPostre(postre);
     } else {
-      item.cantidad += 1;
+      existente.cantidad += 1;
     }
     notifyListeners();
   }
@@ -37,7 +37,10 @@ class CarritoProvider extends ChangeNotifier {
     if (cantidad <= 0) {
       _items.remove(postre.id);
     } else {
-      _items[postre.id] = PedidoItem(postre: postre, cantidad: cantidad);
+      _items[postre.id] = PedidoItem.fromPostre(
+        postre,
+        cantidad: cantidad,
+      );
     }
     notifyListeners();
   }
@@ -52,7 +55,11 @@ class CarritoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> confirmarPedido({String? notas}) async {
+  Future<bool> confirmarPedido({
+    String? notas,
+    int? clienteId,
+    DateTime? fechaEntrega,
+  }) async {
     if (_items.isEmpty) {
       _error = 'Agrega al menos un postre al carrito';
       notifyListeners();
@@ -62,12 +69,16 @@ class CarritoProvider extends ChangeNotifier {
     _error = null;
     _ultimoMensaje = null;
     notifyListeners();
+    final notasValue = notas?.trim();
     try {
       final pedido = await _repository.confirmarPedido(
         items: items,
-        notas: notas,
+        notas: (notasValue == null || notasValue.isEmpty) ? null : notasValue,
+        clienteId: clienteId,
+        fechaEntrega: fechaEntrega,
       );
-      _ultimoMensaje = 'Pedido #${pedido.id} creado (simulado)';
+      _ultimoMensaje =
+          'Pedido #${pedido.id} creado (${pedido.estado.toLowerCase()})';
       limpiar();
       _isProcessing = false;
       notifyListeners();

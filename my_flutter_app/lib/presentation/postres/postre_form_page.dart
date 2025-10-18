@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../presentation/shared/snackbars.dart';
-import '../../providers/categorias_provider.dart';
 import '../../providers/postres_provider.dart';
 
 class PostreFormPage extends StatefulWidget {
@@ -20,9 +19,8 @@ class _PostreFormPageState extends State<PostreFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _precioController = TextEditingController();
-  final _descripcionController = TextEditingController();
-  final _imagenController = TextEditingController();
-  int? _categoriaId;
+  final _porcionesController = TextEditingController(text: '1');
+  bool _activo = true;
   bool _initialized = false;
 
   @override
@@ -30,20 +28,14 @@ class _PostreFormPageState extends State<PostreFormPage> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      final categoriasProvider = context.read<CategoriasProvider>();
-      if (!categoriasProvider.isLoading &&
-          categoriasProvider.categorias.isEmpty) {
-        categoriasProvider.load();
-      }
       if (widget.postreId != null) {
         final existente =
             context.read<PostresProvider>().obtenerPorId(widget.postreId!);
         if (existente != null) {
           _nombreController.text = existente.nombre;
           _precioController.text = existente.precio.toStringAsFixed(2);
-          _descripcionController.text = existente.descripcion ?? '';
-          _imagenController.text = existente.imagenUrl ?? '';
-          _categoriaId = existente.categoriaId;
+          _porcionesController.text = existente.porciones.toString();
+          _activo = existente.activo;
         }
       }
     }
@@ -53,17 +45,14 @@ class _PostreFormPageState extends State<PostreFormPage> {
   void dispose() {
     _nombreController.dispose();
     _precioController.dispose();
-    _descripcionController.dispose();
-    _imagenController.dispose();
+    _porcionesController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final postresProvider = context.watch<PostresProvider>();
-    final categoriasProvider = context.watch<CategoriasProvider>();
     final isEdit = widget.postreId != null;
-    final categorias = categoriasProvider.categorias;
 
     return Scaffold(
       appBar: AppBar(
@@ -103,56 +92,34 @@ class _PostreFormPageState extends State<PostreFormPage> {
                   }
                   final parsed = double.tryParse(value.replaceAll(',', '.'));
                   if (parsed == null || parsed <= 0) {
-                    return 'Ingresa un número válido mayor a 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int?>(
-                value: _categoriaId,
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('Sin categoría'),
-                  ),
-                  ...categorias.map(
-                    (cat) => DropdownMenuItem<int?>(
-                      value: cat.id,
-                      child: Text(cat.nombre),
-                    ),
-                  ),
-                ],
-                onChanged: (value) => setState(() => _categoriaId = value),
-                decoration: const InputDecoration(labelText: 'Categoría'),
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _descripcionController,
-                label: 'Descripción',
-                keyboardType: TextInputType.multiline,
-                validator: (value) {
-                  if (value != null && value.length > 150) {
-                    return 'Máximo 150 caracteres';
+                    return 'Ingresa un n�mero v�lido mayor a 0';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               AppTextField(
-                controller: _imagenController,
-                label: 'URL de imagen',
-                keyboardType: TextInputType.url,
+                controller: _porcionesController,
+                label: 'Porciones *',
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return null;
+                    return 'Las porciones son obligatorias';
                   }
-                  final pattern = RegExp(r'^(http|https)://');
-                  if (!pattern.hasMatch(value.trim())) {
-                    return 'Debe iniciar con http:// o https://';
+                  final parsed = int.tryParse(value.trim());
+                  if (parsed == null || parsed <= 0) {
+                    return 'Ingresa un n�mero entero mayor a 0';
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Disponible (activo)'),
+                value: _activo,
+                onChanged: (value) => setState(() => _activo = value),
               ),
               const SizedBox(height: 24),
               AppPrimaryButton(
@@ -178,14 +145,15 @@ class _PostreFormPageState extends State<PostreFormPage> {
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<PostresProvider>();
-    final precio = double.parse(_precioController.text.replaceAll(',', '.'));
+    final precio =
+        double.parse(_precioController.text.replaceAll(',', '.'));
+    final porciones = int.parse(_porcionesController.text.trim());
     final exito = await provider.guardar(
       id: widget.postreId,
       nombre: _nombreController.text,
       precio: precio,
-      categoriaId: _categoriaId,
-      descripcion: _descripcionController.text,
-      imagenUrl: _imagenController.text,
+      porciones: porciones,
+      activo: _activo,
     );
     if (!mounted) return;
     if (exito) {

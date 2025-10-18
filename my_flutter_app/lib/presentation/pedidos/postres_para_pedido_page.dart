@@ -45,7 +45,7 @@ class _PostresParaPedidoPageState extends State<PostresParaPedidoPage> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: AppSearchField(
-                  hintText: 'Buscar postresâ€¦',
+                  hintText: 'Buscar postres…',
                   onChanged: postresProvider.buscar,
                 ),
               ),
@@ -55,17 +55,23 @@ class _PostresParaPedidoPageState extends State<PostresParaPedidoPage> {
                   separatorBuilder: (_, __) => const Divider(height: 0),
                   itemBuilder: (context, index) {
                     final postre = postresProvider.postres[index];
+                    final puedeAgregar = postre.activo;
                     return ListTile(
                       title: Text(postre.nombre),
-                      subtitle: Text('Q${postre.precio.toStringAsFixed(2)}'),
+                      subtitle: Text(
+                          '${postre.porciones} porciones · Q${postre.precio.toStringAsFixed(2)}'),
                       trailing: FilledButton.icon(
-                        onPressed: () {
-                          context.read<CarritoProvider>().agregarPostre(postre);
-                          showSuccessSnackBar(
-                              context, 'Postre agregado al carrito');
-                        },
+                        onPressed: puedeAgregar
+                            ? () {
+                                context
+                                    .read<CarritoProvider>()
+                                    .agregarPostre(postre);
+                                showSuccessSnackBar(
+                                    context, 'Postre agregado al carrito');
+                              }
+                            : null,
                         icon: const Icon(Icons.add),
-                        label: const Text('Agregar'),
+                        label: Text(puedeAgregar ? 'Agregar' : 'Inactivo'),
                       ),
                     );
                   },

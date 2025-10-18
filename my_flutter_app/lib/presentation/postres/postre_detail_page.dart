@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/categorias_provider.dart';
 import '../../providers/postres_provider.dart';
 import '../../routes/app_router.dart';
 
@@ -19,17 +18,12 @@ class PostreDetailPage extends StatelessWidget {
         return _PostreDetailModel(
           nombre: data.nombre,
           precio: data.precio,
-          categoriaId: data.categoriaId,
-          descripcion: data.descripcion,
-          imagenUrl: data.imagenUrl,
+          porciones: data.porciones,
+          activo: data.activo,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         );
       },
-    );
-
-    final categoriaNombre = context.select<CategoriasProvider, String?>(
-      (provider) => postre?.categoriaId == null
-          ? null
-          : provider.obtenerPorId(postre!.categoriaId!)?.nombre,
     );
 
     return Scaffold(
@@ -51,7 +45,7 @@ class PostreDetailPage extends StatelessWidget {
         ],
       ),
       body: postre == null
-          ? const Center(child: Text('No se encontró el postre'))
+          ? const Center(child: Text('No se encontr� el postre'))
           : Padding(
               padding: const EdgeInsets.all(24),
               child: Card(
@@ -66,16 +60,21 @@ class PostreDetailPage extends StatelessWidget {
                       _buildRow(
                           'Precio', 'Q${postre.precio.toStringAsFixed(2)}'),
                       const SizedBox(height: 8),
-                      _buildRow(
-                          'Categoría', categoriaNombre ?? 'Sin categoría'),
+                      _buildRow('Porciones', '${postre.porciones}'),
                       const SizedBox(height: 8),
-                      _buildRow('Descripción',
-                          postre.descripcion ?? 'Sin descripción'),
-                      if (postre.imagenUrl != null &&
-                          postre.imagenUrl!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        _buildRow('Imagen', postre.imagenUrl!),
-                      ],
+                      _buildRow(
+                          'Estado', postre.activo ? 'Disponible' : 'Inactivo'),
+                      const SizedBox(height: 24),
+                      if (postre.createdAt != null)
+                        Text(
+                          'Creado: ${_formatDate(postre.createdAt!)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      if (postre.updatedAt != null)
+                        Text(
+                          'Actualizado: ${_formatDate(postre.updatedAt!)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                     ],
                   ),
                 ),
@@ -94,20 +93,26 @@ class PostreDetailPage extends StatelessWidget {
       ],
     );
   }
+
+  String _formatDate(DateTime value) {
+    return value.toLocal().toString().split('.').first;
+  }
 }
 
 class _PostreDetailModel {
   const _PostreDetailModel({
     required this.nombre,
     required this.precio,
-    this.categoriaId,
-    this.descripcion,
-    this.imagenUrl,
+    required this.porciones,
+    required this.activo,
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String nombre;
   final double precio;
-  final int? categoriaId;
-  final String? descripcion;
-  final String? imagenUrl;
+  final int porciones;
+  final bool activo;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 }
