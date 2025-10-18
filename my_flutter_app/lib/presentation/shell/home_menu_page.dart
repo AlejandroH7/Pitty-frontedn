@@ -1,85 +1,74 @@
 import 'package:flutter/material.dart';
-
-import '../../routes/app_router.dart';
+import 'package:pitty_app/routes/app_router.dart';
 
 class HomeMenuPage extends StatelessWidget {
   const HomeMenuPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final menuItems = [
-      _MenuItem('Clientes', Icons.people_alt, AppRouter.clientes),
-      _MenuItem('Postres', Icons.cake, AppRouter.postres),
-      _MenuItem('Categorías', Icons.category, AppRouter.categorias),
-      _MenuItem('Pedidos', Icons.shopping_cart, AppRouter.pedidosCatalogo),
-      _MenuItem('Inventario', Icons.inventory_2, AppRouter.inventario),
-      _MenuItem('Reportes', Icons.bar_chart, AppRouter.reportes),
-      _MenuItem('Configuración', Icons.settings, AppRouter.configuracion),
-    ];
-
+    final items = _menuItems();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Menú principal'),
-      ),
+      appBar: AppBar(title: const Text('Menu principal')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GridView.count(
-          crossAxisCount: MediaQuery.of(context).size.width > 700 ? 3 : 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          children: menuItems
-              .map(
-                (item) => _MenuCard(
-                  item: item,
-                  onTap: () => Navigator.pushNamed(context, item.route),
-                ),
-              )
-              .toList(),
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1.1,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) => items[index],
         ),
       ),
     );
   }
-}
 
-class _MenuItem {
-  const _MenuItem(this.title, this.icon, this.route);
-
-  final String title;
-  final IconData icon;
-  final String route;
+  List<_MenuCard> _menuItems() {
+    return const [
+      _MenuCard(title: 'Clientes', icon: Icons.people_alt, routeName: AppRoutes.clientes),
+      _MenuCard(title: 'Ingredientes', icon: Icons.spa, routeName: AppRoutes.ingredientes),
+      _MenuCard(title: 'Postres', icon: Icons.cake, routeName: AppRoutes.postres),
+      _MenuCard(title: 'Pedidos', icon: Icons.receipt_long, routeName: AppRoutes.pedidos),
+      _MenuCard(title: 'Eventos', icon: Icons.event, routeName: AppRoutes.eventos),
+    ];
+  }
 }
 
 class _MenuCard extends StatelessWidget {
-  const _MenuCard({required this.item, required this.onTap});
+  const _MenuCard({
+    required this.title,
+    required this.icon,
+    required this.routeName,
+  });
 
-  final _MenuItem item;
-  final VoidCallback onTap;
+  final String title;
+  final IconData icon;
+  final String routeName;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: theme.colorScheme.primaryContainer,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: () => Navigator.of(context).pushNamed(routeName),
+      child: Card(
+        color: colorScheme.primaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.icon,
-                  size: 48, color: theme.colorScheme.onPrimaryContainer),
+              Icon(icon, size: 48, color: colorScheme.onPrimaryContainer),
               const SizedBox(height: 16),
               Text(
-                item.title,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onPrimaryContainer,
-                ),
-                textAlign: TextAlign.center,
-              )
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ],
           ),
         ),

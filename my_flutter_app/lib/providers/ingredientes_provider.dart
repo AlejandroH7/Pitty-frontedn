@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/ingredientes_repository.dart';
-import 'package:pitty_app/data/repositories/interfaces/postres_repository.dart';
-import 'package:pitty_app/data/repositories/interfaces/recetas_repository.dart';
 
-class PostresProvider extends ChangeNotifier {
-  PostresProvider(this._postresRepository, this._recetasRepository, this._ingredientesRepository);
+class IngredientesProvider extends ChangeNotifier {
+  IngredientesProvider(this._repository);
 
-  final PostresRepository _postresRepository;
-  final RecetasRepository _recetasRepository;
-  final IngredientesRepository _ingredientesRepository;
+  final IngredientesRepository _repository;
 
-  final List<Postre> _postres = [];
+  final List<Ingrediente> _ingredientes = [];
   bool _loading = false;
   String? _error;
   String _query = '';
@@ -21,19 +17,19 @@ class PostresProvider extends ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
   int get page => _page;
-  int get totalItems => _postres.length;
+  int get totalItems => _ingredientes.length;
   int get totalPages => totalItems == 0 ? 1 : (totalItems / _pageSize).ceil();
 
-  List<Postre> get pageItems {
+  List<Ingrediente> get pageItems {
     final start = _page * _pageSize;
-    return _postres.skip(start).take(_pageSize).toList();
+    return _ingredientes.skip(start).take(_pageSize).toList();
   }
 
   Future<void> cargar() async {
     _setLoading(true);
     try {
-      final data = await _postresRepository.listar(query: _query);
-      _postres
+      final data = await _repository.listar(query: _query);
+      _ingredientes
         ..clear()
         ..addAll(data);
       _error = null;
@@ -56,32 +52,35 @@ class PostresProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Postre> obtener(int id) => _postresRepository.obtener(id);
+  Future<Ingrediente> obtener(int id) => _repository.obtener(id);
 
   Future<bool> guardar({
     int? id,
     required String nombre,
-    required double precio,
-    required int porciones,
+    required String unidad,
+    required double stockMinimo,
+    required double stockActual,
     required bool activo,
     bool simulateError = false,
   }) async {
     _setLoading(true);
     try {
       if (id == null) {
-        await _postresRepository.crear(
+        await _repository.crear(
           nombre: nombre,
-          precio: precio,
-          porciones: porciones,
+          unidad: unidad,
+          stockMinimo: stockMinimo,
+          stockActual: stockActual,
           activo: activo,
           simulateError: simulateError,
         );
       } else {
-        await _postresRepository.actualizar(
+        await _repository.actualizar(
           id: id,
           nombre: nombre,
-          precio: precio,
-          porciones: porciones,
+          unidad: unidad,
+          stockMinimo: stockMinimo,
+          stockActual: stockActual,
           activo: activo,
           simulateError: simulateError,
         );
@@ -100,7 +99,7 @@ class PostresProvider extends ChangeNotifier {
   Future<bool> eliminar(int id) async {
     _setLoading(true);
     try {
-      await _postresRepository.eliminar(id);
+      await _repository.eliminar(id);
       await cargar();
       return true;
     } catch (error) {
@@ -110,37 +109,6 @@ class PostresProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-  }
-
-  Future<Receta> obtenerReceta(int postreId) => _recetasRepository.obtenerPorPostre(postreId);
-
-  Future<Receta> guardarItemReceta({
-    required int postreId,
-    required int ingredienteId,
-    required double cantidad,
-    required double merma,
-    bool simulateError = false,
-  }) {
-    final item = RecetaItem(
-      ingredienteId: ingredienteId,
-      ingredienteNombre: '',
-      unidad: '',
-      cantidadPorPostre: cantidad,
-      mermaPct: merma,
-    );
-    return _recetasRepository.agregarOActualizar(
-      postreId: postreId,
-      item: item,
-      simulateError: simulateError,
-    );
-  }
-
-  Future<void> eliminarItemReceta(int postreId, int ingredienteId) {
-    return _recetasRepository.eliminarItem(postreId, ingredienteId);
-  }
-
-  Future<List<Ingrediente>> ingredientesDisponibles() {
-    return _ingredientesRepository.listar();
   }
 
   void limpiarError() {

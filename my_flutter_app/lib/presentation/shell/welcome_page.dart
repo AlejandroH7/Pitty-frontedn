@@ -1,82 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:pitty_app/routes/app_router.dart';
 
-import '../../providers/categorias_provider.dart';
-import '../../providers/clientes_provider.dart';
-import '../../providers/postres_provider.dart';
-import '../../routes/app_router.dart';
-
-class WelcomePage extends StatefulWidget {
+class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
   @override
-  State<WelcomePage> createState() => _WelcomePageState();
-}
-
-class _WelcomePageState extends State<WelcomePage> {
-  bool _initialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      _preloadData();
-    }
-  }
-
-  Future<void> _preloadData() async {
-    await Future.wait([
-      context.read<ClientesProvider>().loadClientes(),
-      context.read<CategoriasProvider>().load(),
-      context.read<PostresProvider>().load(),
-    ]);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 32),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              theme.colorScheme.primaryContainer,
-              theme.colorScheme.secondaryContainer,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [colorScheme.primaryContainer, colorScheme.surface],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'Pitty Pastelería',
-              style: theme.textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.bold,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cake_rounded, size: 96, color: colorScheme.primary),
+              const SizedBox(height: 16),
+              Text(
+                'Pitty Pasteleria',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Gestiona tus clientes, postres y pedidos desde un mismo lugar.',
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 48),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, AppRouter.home),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                child: Text('Ingresar', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                ),
+                child: const Text('Ingresar'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

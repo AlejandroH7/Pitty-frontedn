@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:pitty_app/data/models/models.dart';
-import 'package:pitty_app/data/repositories/interfaces/clientes_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/eventos_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/pedidos_repository.dart';
 
-class ClientesProvider extends ChangeNotifier {
-  ClientesProvider(this._repository);
+class EventosProvider extends ChangeNotifier {
+  EventosProvider(this._repository, this._pedidosRepository);
 
-  final ClientesRepository _repository;
+  final EventosRepository _repository;
+  final PedidosRepository _pedidosRepository;
 
-  final List<Cliente> _clientes = [];
+  final List<Evento> _eventos = [];
   bool _loading = false;
   String? _error;
   String _query = '';
@@ -17,21 +19,19 @@ class ClientesProvider extends ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
   int get page => _page;
-  int get pageSize => _pageSize;
-  int get totalItems => _clientes.length;
+  int get totalItems => _eventos.length;
   int get totalPages => totalItems == 0 ? 1 : (totalItems / _pageSize).ceil();
-  String get query => _query;
 
-  List<Cliente> get pageItems {
+  List<Evento> get pageItems {
     final start = _page * _pageSize;
-    return _clientes.skip(start).take(_pageSize).toList();
+    return _eventos.skip(start).take(_pageSize).toList();
   }
 
   Future<void> cargar() async {
     _setLoading(true);
     try {
       final data = await _repository.listar(query: _query);
-      _clientes
+      _eventos
         ..clear()
         ..addAll(data);
       _error = null;
@@ -54,14 +54,14 @@ class ClientesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Cliente> obtener(int id) {
-    return _repository.obtener(id);
-  }
+  Future<Evento> obtener(int id) => _repository.obtener(id);
 
   Future<bool> guardar({
     int? id,
-    required String nombre,
-    String? telefono,
+    required String titulo,
+    String? lugar,
+    required DateTime fechaHora,
+    int? pedidoId,
     String? notas,
     bool simulateError = false,
   }) async {
@@ -69,16 +69,20 @@ class ClientesProvider extends ChangeNotifier {
     try {
       if (id == null) {
         await _repository.crear(
-          nombre: nombre,
-          telefono: telefono,
+          titulo: titulo,
+          lugar: lugar,
+          fechaHora: fechaHora,
+          pedidoId: pedidoId,
           notas: notas,
           simulateError: simulateError,
         );
       } else {
         await _repository.actualizar(
           id: id,
-          nombre: nombre,
-          telefono: telefono,
+          titulo: titulo,
+          lugar: lugar,
+          fechaHora: fechaHora,
+          pedidoId: pedidoId,
           notas: notas,
           simulateError: simulateError,
         );
@@ -108,6 +112,8 @@ class ClientesProvider extends ChangeNotifier {
       _setLoading(false);
     }
   }
+
+  Future<List<Pedido>> listarPedidos() => _pedidosRepository.listar();
 
   void limpiarError() {
     _error = null;

@@ -1,101 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/config/app_config.dart';
-import 'core/http/api_exception.dart';
-import 'core/http/auth_service.dart';
-import 'core/http/http_client.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repositories/categorias_repository.dart';
-import 'data/repositories/categorias_repository_mem.dart';
-import 'data/repositories/clientes_repository.dart';
-import 'data/repositories/postres_repository.dart';
-import 'data/repositories/pedidos_repository.dart';
-import 'data/repositories/api/clientes_repository_api.dart';
-import 'data/repositories/api/pedidos_repository_api.dart';
-import 'data/repositories/api/postres_repository_api.dart';
-import 'providers/carrito_provider.dart';
-import 'providers/categorias_provider.dart';
+import 'data/repositories/interfaces/clientes_repository.dart';
+import 'data/repositories/interfaces/ingredientes_repository.dart';
+import 'data/repositories/interfaces/postres_repository.dart';
+import 'data/repositories/interfaces/recetas_repository.dart';
+import 'data/repositories/interfaces/pedidos_repository.dart';
+import 'data/repositories/interfaces/eventos_repository.dart';
+import 'data/repositories/memory/clientes_repository_mem.dart';
+import 'data/repositories/memory/ingredientes_repository_mem.dart';
+import 'data/repositories/memory/postres_repository_mem.dart';
+import 'data/repositories/memory/recetas_repository_mem.dart';
+import 'data/repositories/memory/pedidos_repository_mem.dart';
+import 'data/repositories/memory/eventos_repository_mem.dart';
+import 'data/repositories/memory/in_memory_data_source.dart';
 import 'providers/clientes_provider.dart';
+import 'providers/ingredientes_provider.dart';
 import 'providers/postres_provider.dart';
+import 'providers/pedidos_provider.dart';
+import 'providers/eventos_provider.dart';
 import 'routes/app_router.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  final store = InMemoryDataSource();
+  final clientesRepository = ClientesRepositoryMem(store);
+  final ingredientesRepository = IngredientesRepositoryMem(store);
+  final postresRepository = PostresRepositoryMem(store);
+  final recetasRepository = RecetasRepositoryMem(store, ingredientesRepository);
+  final pedidosRepository = PedidosRepositoryMem(store);
+  final eventosRepository = EventosRepositoryMem(store);
 
-  final httpClient = HttpClient(
-    baseUrl: AppConfig.apiBaseUrl,
-    timeout: Duration(seconds: AppConfig.httpTimeoutSeconds),
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<ClientesRepository>.value(value: clientesRepository),
+        Provider<IngredientesRepository>.value(value: ingredientesRepository),
+        Provider<PostresRepository>.value(value: postresRepository),
+        Provider<RecetasRepository>.value(value: recetasRepository),
+        Provider<PedidosRepository>.value(value: pedidosRepository),
+        Provider<EventosRepository>.value(value: eventosRepository),
+        ChangeNotifierProvider(
+          create: (_) => ClientesProvider(clientesRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => IngredientesProvider(ingredientesRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PostresProvider(
+            postresRepository,
+            recetasRepository,
+            ingredientesRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PedidosProvider(
+            pedidosRepository,
+            clientesRepository,
+            postresRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => EventosProvider(
+            eventosRepository,
+            pedidosRepository,
+          ),
+        ),
+      ],
+      child: const PittyApp(),
+    ),
   );
-  final authService = AuthService(httpClient);
-
-  try {
-    await authService.loginIfNeeded();
-  } on ApiException catch (e) {
-    debugPrint('Autenticación fallida: $e');
-    rethrow;
-  }
-
-  runApp(PittyApp(
-    httpClient: httpClient,
-    authService: authService,
-  ));
 }
 
 class PittyApp extends StatelessWidget {
-  const PittyApp({super.key, required this.httpClient, required this.authService});
-
-  final HttpClient httpClient;
-  final AuthService authService;
+  const PittyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final router = AppRouter();
-    return MultiProvider(
-      providers: [
-        Provider<HttpClient>.value(value: httpClient),
-        Provider<AuthService>.value(value: authService),
-        Provider<ClientesRepository>(
-          create: (context) =>
-              ClientesRepositoryApi(context.read<HttpClient>()),
-        ),
-        Provider<CategoriasRepository>(
-          create: (_) => CategoriasRepositoryMem(),
-        ),
-        Provider<PostresRepository>(
-          create: (context) =>
-              PostresRepositoryApi(context.read<HttpClient>()),
-        ),
-        Provider<PedidosRepository>(
-          create: (context) =>
-              PedidosRepositoryApi(context.read<HttpClient>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              ClientesProvider(context.read<ClientesRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              CategoriasProvider(context.read<CategoriasRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              PostresProvider(context.read<PostresRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              CarritoProvider(context.read<PedidosRepository>()),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Pitty Pastelería',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        initialRoute: AppRouter.welcome,
-        onGenerateRoute: router.onGenerateRoute,
-      ),
+    return MaterialApp(
+      title: 'Pitty',
+      debugShowCheckedModeBanner: false,
+      theme: buildAppTheme(),
+      initialRoute: AppRoutes.welcome,
+      onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
 }

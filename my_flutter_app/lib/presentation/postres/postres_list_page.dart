@@ -1,141 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:pitty_app/core/widgets/app_loading.dart';
+import 'package:pitty_app/core/widgets/app_search_field.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/core/widgets/error_state.dart';
+import 'package:pitty_app/core/widgets/pagination_footer.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/providers/postres_provider.dart';
+import 'package:pitty_app/routes/app_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/widgets.dart';
-import '../../presentation/shared/dialogs.dart';
-import '../../presentation/shared/empty_view.dart';
-import '../../presentation/shared/loading_view.dart';
-import '../../presentation/shared/snackbars.dart';
-import '../../providers/postres_provider.dart';
-import '../../routes/app_router.dart';
-
-class PostresListPage extends StatelessWidget {
+class PostresListPage extends StatefulWidget {
   const PostresListPage({super.key});
+
+  @override
+  State<PostresListPage> createState() => _PostresListPageState();
+}
+
+class _PostresListPageState extends State<PostresListPage> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostresProvider>().cargar();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Postres'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<PostresProvider>().load(),
-            tooltip: 'Refrescar',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Postres')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(
-          context,
-          AppRouter.postreForm,
-          arguments: const PostreFormArgs(),
-        ),
-        icon: const Icon(Icons.add),
+        onPressed: () async {
+          final result = await Navigator.of(context).pushNamed<bool>(
+            AppRoutes.postreForm,
+            arguments: const PostreFormArgs(),
+          );
+          _handleResult(result);
+        },
         label: const Text('Nuevo postre'),
+        icon: const Icon(Icons.add),
       ),
       body: Consumer<PostresProvider>(
-        builder: (context, postresProvider, _) {
-          if (postresProvider.isLoading) {
-            return const LoadingView();
-          }
-          if (postresProvider.error != null) {
-            return _ErrorView(message: postresProvider.error!);
-          }
-          if (postresProvider.postres.isEmpty) {
-            return const EmptyView(message: 'No hay postres registrados');
+        builder: (context, controller, _) {
+          _maybeShowError(controller.error);
+
+          if (controller.loading && controller.totalItems == 0) {
+            return const AppLoading();
           }
 
+          if (controller.error != null && controller.totalItems == 0) {
+            return ErrorState(
+              message: controller.error ?? 'Error (simulado)',
+              onRetry: controller.cargar,
+            );
+          }
+
+          final items = controller.pageItems;
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16.0),
                 child: AppSearchField(
-                  hintText: 'Buscar postres…',
-                  onChanged: postresProvider.buscar,
+                  label: 'Buscar postre',
+                  controller: _searchController,
+                  onChanged: controller.buscar,
                 ),
               ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: postresProvider.load,
-                  child: ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final postre = postresProvider.postres[index];
-                      return ListTile(
-                        title: Text(postre.nombre),
-                        subtitle: Text(
-                          '${postre.porciones} porciones · ${postre.activo ? 'Disponible' : 'Inactivo'}',
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('Q${postre.precio.toStringAsFixed(2)}'),
-                            PopupMenuButton<String>(
-                              onSelected: (value) => _onOptionSelected(
-                                context,
-                                value,
-                                postre.id,
-                              ),
-                              itemBuilder: (context) => const [
-                                PopupMenuItem(
-                                    value: 'detalle',
-                                    child: Text('Ver detalle')),
-                                PopupMenuItem(
-                                    value: 'editar', child: Text('Editar')),
-                                PopupMenuItem(
-                                    value: 'eliminar', child: Text('Eliminar')),
-                              ],
-                              icon: const Icon(Icons.more_vert),
-                            ),
-                          ],
-                        ),
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          AppRouter.postreDetalle,
-                          arguments: PostreDetailArgs(postre.id),
-                        ),
-                      );
-                    },
-                    separatorBuilder: (_, __) => const Divider(height: 0),
-                    itemCount: postresProvider.postres.length,
-                  ),
+              if (controller.loading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Cargando...'),
                 ),
+              Expanded(
+                child: items.isEmpty
+                    ? const EmptyState(message: 'No hay postres registrados.')
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemBuilder: (context, index) {
+                          final postre = items[index];
+                          return ListTile(
+                            title: Text(postre.nombre),
+                            subtitle: Text(
+                              'Precio: S/ ${postre.precio.toStringAsFixed(2)} - Porciones: ${postre.porciones}',
+                            ),
+                            trailing: StatusChip(
+                              label: postre.activo ? 'Activo' : 'Inactivo',
+                              color: postre.activo
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : Theme.of(context).colorScheme.errorContainer,
+                            ),
+                            onTap: () async {
+                              final result = await Navigator.of(context).pushNamed<bool>(
+                                AppRoutes.postreDetail,
+                                arguments: PostreDetailArgs(postreId: postre.id),
+                              );
+                              _handleResult(result);
+                            },
+                          );
+                        },
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemCount: items.length,
+                      ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                        'Página ${postresProvider.currentPage + 1} de ${postresProvider.totalPages}'),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: postresProvider.hasPreviousPage
-                              ? postresProvider.previousPage
-                              : null,
-                          icon: const Icon(Icons.arrow_back_ios),
-                        ),
-                        IconButton(
-                          onPressed: postresProvider.hasNextPage
-                              ? postresProvider.nextPage
-                              : null,
-                          icon: const Icon(Icons.arrow_forward_ios),
-                        ),
-                      ],
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: PaginationFooter(
+                  currentPage: controller.page,
+                  totalPages: controller.totalPages,
+                  onPageSelected: controller.irAPagina,
                 ),
               ),
-              if (postresProvider.isSaving)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 12),
-                  child: Text('Guardando…',
-                      style: TextStyle(fontStyle: FontStyle.italic)),
-                ),
             ],
           );
         },
@@ -143,72 +126,24 @@ class PostresListPage extends StatelessWidget {
     );
   }
 
-  Future<void> _onOptionSelected(
-      BuildContext context, String action, int postreId) async {
-    switch (action) {
-      case 'detalle':
-        Navigator.pushNamed(
-          context,
-          AppRouter.postreDetalle,
-          arguments: PostreDetailArgs(postreId),
-        );
-        break;
-      case 'editar':
-        Navigator.pushNamed(
-          context,
-          AppRouter.postreForm,
-          arguments: PostreFormArgs(id: postreId),
-        );
-        break;
-      case 'eliminar':
-        final confirmed = await showConfirmDeleteDialog(
-          context: context,
-          title: 'Eliminar postre',
-          message: '¿Deseas eliminar este postre?',
-        );
-        if (!confirmed) return;
-        final success =
-            await context.read<PostresProvider>().eliminar(postreId);
-        if (context.mounted) {
-          if (success) {
-            showSuccessSnackBar(context, 'Postre eliminado');
-          } else {
-            final error =
-                context.read<PostresProvider>().error ?? 'No se pudo eliminar';
-            showErrorSnackBar(context, error);
-          }
-        }
-        break;
-    }
+  void _maybeShowError(String? error) {
+    if (error == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.replaceAll('Exception: ', ''))),
+      );
+      context.read<PostresProvider>().limpiarError();
+    });
   }
-}
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () => context.read<PostresProvider>().load(),
-              child: const Text('Reintentar'),
-            ),
-          ],
-        ),
+  void _handleResult(bool? result) {
+    if (result == null) return;
+    final scheme = Theme.of(context).colorScheme;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result ? 'Guardado' : 'Error (simulado)'),
+        backgroundColor: result ? scheme.primary : scheme.error,
       ),
     );
   }

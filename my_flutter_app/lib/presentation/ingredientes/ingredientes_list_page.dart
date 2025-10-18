@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:pitty_app/core/utils/date_formatter.dart';
 import 'package:pitty_app/core/widgets/app_loading.dart';
 import 'package:pitty_app/core/widgets/app_search_field.dart';
 import 'package:pitty_app/core/widgets/empty_state.dart';
 import 'package:pitty_app/core/widgets/error_state.dart';
 import 'package:pitty_app/core/widgets/pagination_footer.dart';
-import 'package:pitty_app/providers/clientes_provider.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/providers/ingredientes_provider.dart';
 import 'package:pitty_app/routes/app_router.dart';
 import 'package:provider/provider.dart';
 
-class ClientesListPage extends StatefulWidget {
-  const ClientesListPage({super.key});
+class IngredientesListPage extends StatefulWidget {
+  const IngredientesListPage({super.key});
 
   @override
-  State<ClientesListPage> createState() => _ClientesListPageState();
+  State<IngredientesListPage> createState() => _IngredientesListPageState();
 }
 
-class _ClientesListPageState extends State<ClientesListPage> {
+class _IngredientesListPageState extends State<IngredientesListPage> {
   late final TextEditingController _searchController;
 
   @override
@@ -24,7 +24,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
     super.initState();
     _searchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ClientesProvider>().cargar();
+      context.read<IngredientesProvider>().cargar();
     });
   }
 
@@ -37,19 +37,19 @@ class _ClientesListPageState extends State<ClientesListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientes')),
+      appBar: AppBar(title: const Text('Ingredientes')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.of(context).pushNamed<bool>(
-            AppRoutes.clienteForm,
-            arguments: const ClienteFormArgs(),
+            AppRoutes.ingredienteForm,
+            arguments: const IngredienteFormArgs(),
           );
-          _handleFormResult(result);
+          _handleResult(result);
         },
-        label: const Text('Nuevo cliente'),
-        icon: const Icon(Icons.person_add),
+        label: const Text('Nuevo ingrediente'),
+        icon: const Icon(Icons.add),
       ),
-      body: Consumer<ClientesProvider>(
+      body: Consumer<IngredientesProvider>(
         builder: (context, controller, _) {
           _maybeShowError(controller.error);
 
@@ -70,7 +70,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: AppSearchField(
-                  label: 'Buscar por nombre o telefono',
+                  label: 'Buscar ingrediente',
                   controller: _searchController,
                   onChanged: controller.buscar,
                 ),
@@ -82,21 +82,26 @@ class _ClientesListPageState extends State<ClientesListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay clientes registrados.')
+                    ? const EmptyState(message: 'No hay ingredientes registrados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {
-                          final cliente = items[index];
+                          final ingrediente = items[index];
                           return ListTile(
-                            title: Text(cliente.nombre),
-                            subtitle: Text(cliente.telefono ?? 'Sin telefono'),
-                            trailing: Text(formatDate(cliente.createdAt)),
+                            title: Text(ingrediente.nombre),
+                            subtitle: Text('Stock: ${ingrediente.stockActual.toStringAsFixed(2)} ${ingrediente.unidad} (minimo ${ingrediente.stockMinimo.toStringAsFixed(2)})'),
+                            trailing: StatusChip(
+                              label: ingrediente.activo ? 'Activo' : 'Inactivo',
+                              color: ingrediente.activo
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : Theme.of(context).colorScheme.errorContainer,
+                            ),
                             onTap: () async {
                               final result = await Navigator.of(context).pushNamed<bool>(
-                                AppRoutes.clienteDetail,
-                                arguments: ClienteDetailArgs(clienteId: cliente.id),
+                                AppRoutes.ingredienteDetail,
+                                arguments: IngredienteDetailArgs(ingredienteId: ingrediente.id),
                               );
-                              _handleFormResult(result);
+                              _handleResult(result);
                             },
                           );
                         },
@@ -126,18 +131,17 @@ class _ClientesListPageState extends State<ClientesListPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.replaceAll('Exception: ', ''))),
       );
-      context.read<ClientesProvider>().limpiarError();
+      context.read<IngredientesProvider>().limpiarError();
     });
   }
 
-  void _handleFormResult(bool? result) {
+  void _handleResult(bool? result) {
     if (result == null) return;
-    final message = result ? 'Guardado' : 'Error (simulado)';
-    final colorScheme = Theme.of(context).colorScheme;
+    final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: result ? colorScheme.primary : colorScheme.error,
+        content: Text(result ? 'Guardado' : 'Error (simulado)'),
+        backgroundColor: result ? scheme.primary : scheme.error,
       ),
     );
   }

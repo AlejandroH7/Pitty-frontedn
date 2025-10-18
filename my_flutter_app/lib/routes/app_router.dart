@@ -1,128 +1,200 @@
 import 'package:flutter/material.dart';
 
-import '../presentation/categorias/categoria_form_page.dart';
-import '../presentation/categorias/categorias_list_page.dart';
-import '../presentation/clientes/cliente_detail_page.dart';
-import '../presentation/clientes/cliente_form_page.dart';
-import '../presentation/clientes/clientes_list_page.dart';
-import '../presentation/pedidos/carrito_page.dart';
-import '../presentation/pedidos/confirmacion_pedido_page.dart';
-import '../presentation/pedidos/postres_para_pedido_page.dart';
-import '../presentation/postres/postre_detail_page.dart';
-import '../presentation/postres/postre_form_page.dart';
-import '../presentation/postres/postres_list_page.dart';
-import '../presentation/shared/under_construction_page.dart';
-import '../presentation/shell/home_menu_page.dart';
-import '../presentation/shell/welcome_page.dart';
+import 'package:pitty_app/data/models/models.dart';
+import 'package:pitty_app/presentation/clientes/cliente_detail_page.dart';
+import 'package:pitty_app/presentation/clientes/cliente_form_page.dart';
+import 'package:pitty_app/presentation/clientes/clientes_list_page.dart';
+import 'package:pitty_app/presentation/eventos/evento_detail_page.dart';
+import 'package:pitty_app/presentation/eventos/evento_form_page.dart';
+import 'package:pitty_app/presentation/eventos/eventos_list_page.dart';
+import 'package:pitty_app/presentation/ingredientes/ingrediente_detail_page.dart';
+import 'package:pitty_app/presentation/ingredientes/ingrediente_form_page.dart';
+import 'package:pitty_app/presentation/ingredientes/ingredientes_list_page.dart';
+import 'package:pitty_app/presentation/pedidos/pedido_detail_page.dart';
+import 'package:pitty_app/presentation/pedidos/pedido_wizard_page.dart';
+import 'package:pitty_app/presentation/pedidos/pedidos_list_page.dart';
+import 'package:pitty_app/presentation/postres/postre_detail_page.dart';
+import 'package:pitty_app/presentation/postres/postre_form_page.dart';
+import 'package:pitty_app/presentation/postres/postres_list_page.dart';
+import 'package:pitty_app/presentation/shell/home_menu_page.dart';
+import 'package:pitty_app/presentation/shell/welcome_page.dart';
 
-class ClienteDetailArgs {
-  const ClienteDetailArgs(this.id);
-  final int id;
-}
-
-class ClienteFormArgs {
-  const ClienteFormArgs({this.id});
-  final int? id;
-}
-
-class PostreDetailArgs {
-  const PostreDetailArgs(this.id);
-  final int id;
-}
-
-class PostreFormArgs {
-  const PostreFormArgs({this.id});
-  final int? id;
-}
-
-class CategoriaFormArgs {
-  const CategoriaFormArgs({this.id});
-  final int? id;
-}
-
-class AppRouter {
+class AppRoutes {
   static const welcome = '/';
   static const home = '/home';
   static const clientes = '/clientes';
-  static const clienteDetalle = '/clientes/detalle';
+  static const clienteDetail = '/clientes/detalle';
   static const clienteForm = '/clientes/form';
+  static const ingredientes = '/ingredientes';
+  static const ingredienteDetail = '/ingredientes/detalle';
+  static const ingredienteForm = '/ingredientes/form';
   static const postres = '/postres';
-  static const postreDetalle = '/postres/detalle';
+  static const postreDetail = '/postres/detalle';
   static const postreForm = '/postres/form';
-  static const categorias = '/categorias';
-  static const categoriaForm = '/categorias/form';
-  static const pedidosCatalogo = '/pedidos/catalogo';
-  static const carrito = '/pedidos/carrito';
-  static const confirmarPedido = '/pedidos/confirmar';
-  static const inventario = '/inventario';
-  static const reportes = '/reportes';
-  static const configuracion = '/configuracion';
+  static const pedidos = '/pedidos';
+  static const pedidoDetail = '/pedidos/detalle';
+  static const pedidoWizard = '/pedidos/nuevo';
+  static const eventos = '/eventos';
+  static const eventoDetail = '/eventos/detalle';
+  static const eventoForm = '/eventos/form';
+}
 
-  Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+class AppRouter {
+  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case welcome:
-        return _materialRoute(const WelcomePage(), settings);
-      case home:
-        return _materialRoute(const HomeMenuPage(), settings);
-      case clientes:
-        return _materialRoute(const ClientesListPage(), settings);
-      case clienteDetalle:
+      case AppRoutes.welcome:
+        return MaterialPageRoute(
+          builder: (_) => const WelcomePage(),
+          settings: settings,
+        );
+      case AppRoutes.home:
+        return MaterialPageRoute(
+          builder: (_) => const HomeMenuPage(),
+          settings: settings,
+        );
+      case AppRoutes.clientes:
+        return MaterialPageRoute(
+          builder: (_) => const ClientesListPage(),
+          settings: settings,
+        );
+      case AppRoutes.clienteDetail:
         final args = settings.arguments as ClienteDetailArgs;
-        return _materialRoute(ClienteDetailPage(clienteId: args.id), settings);
-      case clienteForm:
+        return MaterialPageRoute(
+          builder: (_) => ClienteDetailPage(clienteId: args.clienteId),
+          settings: settings,
+        );
+      case AppRoutes.clienteForm:
         final args = settings.arguments as ClienteFormArgs?;
-        return _materialRoute(ClienteFormPage(clienteId: args?.id), settings);
-      case postres:
-        return _materialRoute(const PostresListPage(), settings);
-      case postreDetalle:
+        return MaterialPageRoute(
+          builder: (_) => ClienteFormPage(cliente: args?.cliente),
+          settings: settings,
+        );
+      case AppRoutes.ingredientes:
+        return MaterialPageRoute(
+          builder: (_) => const IngredientesListPage(),
+          settings: settings,
+        );
+      case AppRoutes.ingredienteDetail:
+        final args = settings.arguments as IngredienteDetailArgs;
+        return MaterialPageRoute(
+          builder: (_) => IngredienteDetailPage(ingredienteId: args.ingredienteId),
+          settings: settings,
+        );
+      case AppRoutes.ingredienteForm:
+        final args = settings.arguments as IngredienteFormArgs?;
+        return MaterialPageRoute(
+          builder: (_) => IngredienteFormPage(ingrediente: args?.ingrediente),
+          settings: settings,
+        );
+      case AppRoutes.postres:
+        return MaterialPageRoute(
+          builder: (_) => const PostresListPage(),
+          settings: settings,
+        );
+      case AppRoutes.postreDetail:
         final args = settings.arguments as PostreDetailArgs;
-        return _materialRoute(PostreDetailPage(postreId: args.id), settings);
-      case postreForm:
+        return MaterialPageRoute(
+          builder: (_) => PostreDetailPage(postreId: args.postreId),
+          settings: settings,
+        );
+      case AppRoutes.postreForm:
         final args = settings.arguments as PostreFormArgs?;
-        return _materialRoute(PostreFormPage(postreId: args?.id), settings);
-      case categorias:
-        return _materialRoute(const CategoriasListPage(), settings);
-      case categoriaForm:
-        final args = settings.arguments as CategoriaFormArgs?;
-        return _materialRoute(
-            CategoriaFormPage(categoriaId: args?.id), settings);
-      case pedidosCatalogo:
-        return _materialRoute(const PostresParaPedidoPage(), settings);
-      case carrito:
-        return _materialRoute(const CarritoPage(), settings);
-      case confirmarPedido:
-        return _materialRoute(const ConfirmacionPedidoPage(), settings);
-      case inventario:
-        return _materialRoute(
-          const UnderConstructionPage(title: 'Inventario'),
-          settings,
+        return MaterialPageRoute(
+          builder: (_) => PostreFormPage(postre: args?.postre),
+          settings: settings,
         );
-      case reportes:
-        return _materialRoute(
-          const UnderConstructionPage(title: 'Reportes'),
-          settings,
+      case AppRoutes.pedidos:
+        return MaterialPageRoute(
+          builder: (_) => const PedidosListPage(),
+          settings: settings,
         );
-      case configuracion:
-        return _materialRoute(
-          const UnderConstructionPage(title: 'Configuración'),
-          settings,
+      case AppRoutes.pedidoDetail:
+        final args = settings.arguments as PedidoDetailArgs;
+        return MaterialPageRoute(
+          builder: (_) => PedidoDetailPage(pedidoId: args.pedidoId),
+          settings: settings,
+        );
+      case AppRoutes.pedidoWizard:
+        return MaterialPageRoute(
+          builder: (_) => const PedidoWizardPage(),
+          settings: settings,
+        );
+      case AppRoutes.eventos:
+        return MaterialPageRoute(
+          builder: (_) => const EventosListPage(),
+          settings: settings,
+        );
+      case AppRoutes.eventoDetail:
+        final args = settings.arguments as EventoDetailArgs;
+        return MaterialPageRoute(
+          builder: (_) => EventoDetailPage(eventoId: args.eventoId),
+          settings: settings,
+        );
+      case AppRoutes.eventoForm:
+        final args = settings.arguments as EventoFormArgs?;
+        return MaterialPageRoute(
+          builder: (_) => EventoFormPage(evento: args?.evento),
+          settings: settings,
         );
       default:
-        return _materialRoute(
-          Scaffold(
-            appBar: AppBar(title: const Text('Ruta no encontrada')),
-            body: const Center(child: Text('Pantalla no disponible')),
-          ),
-          settings,
+        return MaterialPageRoute(
+          builder: (_) => const WelcomePage(),
+          settings: settings,
         );
     }
   }
+}
 
-  MaterialPageRoute<dynamic> _materialRoute(
-      Widget page, RouteSettings settings) {
-    return MaterialPageRoute<dynamic>(
-      builder: (_) => page,
-      settings: settings,
-    );
-  }
+class ClienteDetailArgs {
+  const ClienteDetailArgs({required this.clienteId});
+
+  final int clienteId;
+}
+
+class ClienteFormArgs {
+  const ClienteFormArgs({this.cliente});
+
+  final Cliente? cliente;
+}
+
+class IngredienteDetailArgs {
+  const IngredienteDetailArgs({required this.ingredienteId});
+
+  final int ingredienteId;
+}
+
+class IngredienteFormArgs {
+  const IngredienteFormArgs({this.ingrediente});
+
+  final Ingrediente? ingrediente;
+}
+
+class PostreDetailArgs {
+  const PostreDetailArgs({required this.postreId});
+
+  final int postreId;
+}
+
+class PostreFormArgs {
+  const PostreFormArgs({this.postre});
+
+  final Postre? postre;
+}
+
+class PedidoDetailArgs {
+  const PedidoDetailArgs({required this.pedidoId});
+
+  final int pedidoId;
+}
+
+class EventoDetailArgs {
+  const EventoDetailArgs({required this.eventoId});
+
+  final int eventoId;
+}
+
+class EventoFormArgs {
+  const EventoFormArgs({this.evento});
+
+  final Evento? evento;
 }

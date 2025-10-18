@@ -3,23 +3,26 @@ import 'package:flutter/material.dart';
 class AppSearchField extends StatelessWidget {
   const AppSearchField({
     super.key,
-    required this.hintText,
+    required this.label,
+    required this.controller,
     this.onChanged,
   });
 
-  final String hintText;
+  final String label;
+  final TextEditingController controller;
   final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      onChanged: onChanged,
+      controller: controller,
       decoration: InputDecoration(
-        hintText: hintText,
+        labelText: label,
         prefixIcon: const Icon(Icons.search),
-        border: const OutlineInputBorder(),
-        filled: true,
       ),
+      textInputAction: TextInputAction.search,
+      onSubmitted: onChanged,
+      onChanged: onChanged,
     );
   }
 }

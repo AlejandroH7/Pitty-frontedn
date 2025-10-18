@@ -1,42 +1,24 @@
 import 'package:flutter/material.dart';
 
-class AppTheme {
-  static ThemeData lightTheme = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7B4B94)),
-    useMaterial3: true,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: const Color(0xFFF7F5F8),
-    appBarTheme: const AppBarTheme(
-      centerTitle: false,
-      backgroundColor: Colors.white,
-      foregroundColor: Color(0xFF2E1F39),
-      elevation: 0,
-    ),
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
-      filled: true,
-      fillColor: Colors.white,
-    ),
-    snackBarTheme: const SnackBarThemeData(
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
+ThemeData buildAppTheme() {
+  final colorScheme = ColorScheme.fromSeed(seedColor: Colors.brown);
 
-  static ThemeData darkTheme = ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFB67CFF),
-      brightness: Brightness.dark,
-    ),
+  return ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
-    appBarTheme: const AppBarTheme(
-      centerTitle: false,
+    colorScheme: colorScheme,
+    scaffoldBackgroundColor: colorScheme.surface,
+    appBarTheme: AppBarTheme(
+      backgroundColor: colorScheme.surface,
+      foregroundColor: colorScheme.onSurface,
+      elevation: 0,
+      centerTitle: true,
     ),
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
     ),
-    snackBarTheme: const SnackBarThemeData(
-      behavior: SnackBarBehavior.floating,
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: colorScheme.primary,
+      contentTextStyle: TextStyle(color: colorScheme.onPrimary),
     ),
   );
 }

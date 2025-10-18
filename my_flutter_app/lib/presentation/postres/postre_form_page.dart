@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/app_primary_button.dart';
-import '../../core/widgets/app_text_field.dart';
-import '../../presentation/shared/snackbars.dart';
-import '../../providers/postres_provider.dart';
+import '../../core/utils/validators.dart';
+import '../../data/models/postre.dart';
+import 'package:pitty_app/providers/postres_provider.dart';
 
 class PostreFormPage extends StatefulWidget {
-  const PostreFormPage({super.key, this.postreId});
+  const PostreFormPage({super.key, this.postre});
 
-  final int? postreId;
+  final Postre? postre;
 
   @override
   State<PostreFormPage> createState() => _PostreFormPageState();
@@ -17,28 +16,24 @@ class PostreFormPage extends StatefulWidget {
 
 class _PostreFormPageState extends State<PostreFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
-  final _precioController = TextEditingController();
-  final _porcionesController = TextEditingController(text: '1');
+  late final TextEditingController _nombreController;
+  late final TextEditingController _precioController;
+  late final TextEditingController _porcionesController;
   bool _activo = true;
-  bool _initialized = false;
+  bool _simulateError = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      if (widget.postreId != null) {
-        final existente =
-            context.read<PostresProvider>().obtenerPorId(widget.postreId!);
-        if (existente != null) {
-          _nombreController.text = existente.nombre;
-          _precioController.text = existente.precio.toStringAsFixed(2);
-          _porcionesController.text = existente.porciones.toString();
-          _activo = existente.activo;
-        }
-      }
-    }
+  void initState() {
+    super.initState();
+    final postre = widget.postre;
+    _nombreController = TextEditingController(text: postre?.nombre ?? '');
+    _precioController = TextEditingController(
+      text: postre != null ? postre.precio.toStringAsFixed(2) : '',
+    );
+    _porcionesController = TextEditingController(
+      text: postre != null ? postre.porciones.toString() : '',
+    );
+    _activo = postre?.activo ?? true;
   }
 
   @override
@@ -51,120 +46,80 @@ class _PostreFormPageState extends State<PostreFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final postresProvider = context.watch<PostresProvider>();
-    final isEdit = widget.postreId != null;
-
+    final editing = widget.postre != null;
+    final controller = context.watch<PostresProvider>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEdit ? 'Editar postre' : 'Nuevo postre'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTextField(
-                controller: _nombreController,
-                label: 'Nombre *',
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El nombre es obligatorio';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Debe tener al menos 2 caracteres';
-                  }
-                  return null;
-                },
+      appBar: AppBar(title: Text(editing ? 'Editar postre' : 'Nuevo postre')),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            TextFormField(
+              controller: _nombreController,
+              decoration: const InputDecoration(labelText: 'Nombre *'),
+              validator: (value) => requiredField(value, message: 'El nombre es obligatorio'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _precioController,
+              decoration: const InputDecoration(labelText: 'Precio (S/) *'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (value) => positiveNumber(value, message: 'El precio debe ser mayor a 0'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _porcionesController,
+              decoration: const InputDecoration(labelText: 'Porciones *'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                final number = int.tryParse(value ?? '');
+                if (number == null || number < 1) {
+                  return 'Las porciones deben ser al menos 1';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile.adaptive(
+              value: _activo,
+              onChanged: (value) => setState(() => _activo = value),
+              title: const Text('Postre activo'),
+            ),
+            SwitchListTile.adaptive(
+              value: _simulateError,
+              onChanged: (value) => setState(() => _simulateError = value),
+              title: const Text('Simular error al guardar'),
+            ),
+            const SizedBox(height: 16),
+            if (controller.loading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12.0),
+                child: Text('Cargando...'),
               ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _precioController,
-                label: 'Precio *',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El precio es obligatorio';
-                  }
-                  final parsed = double.tryParse(value.replaceAll(',', '.'));
-                  if (parsed == null || parsed <= 0) {
-                    return 'Ingresa un número válido mayor a 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _porcionesController,
-                label: 'Porciones *',
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Las porciones son obligatorias';
-                  }
-                  final parsed = int.tryParse(value.trim());
-                  if (parsed == null || parsed <= 0) {
-                    return 'Ingresa un número entero mayor a 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Disponible (activo)'),
-                value: _activo,
-                onChanged: (value) => setState(() => _activo = value),
-              ),
-              const SizedBox(height: 24),
-              AppPrimaryButton(
-                label: isEdit ? 'Guardar cambios' : 'Crear postre',
-                isLoading: postresProvider.isSaving,
-                onPressed: postresProvider.isSaving ? null : _guardar,
-              ),
-              if (postresProvider.error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    postresProvider.error!,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
-                ),
-            ],
-          ),
+            FilledButton.icon(
+              onPressed: controller.loading ? null : _submit,
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _guardar() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final provider = context.read<PostresProvider>();
-    final precio =
-        double.parse(_precioController.text.replaceAll(',', '.'));
-    final porciones = int.parse(_porcionesController.text.trim());
-    final exito = await provider.guardar(
-      id: widget.postreId,
+    final controller = context.read<PostresProvider>();
+    final success = await controller.guardar(
+      id: widget.postre?.id,
       nombre: _nombreController.text,
-      precio: precio,
-      porciones: porciones,
+      precio: parseDouble(_precioController.text),
+      porciones: int.parse(_porcionesController.text),
       activo: _activo,
+      simulateError: _simulateError,
     );
     if (!mounted) return;
-    if (exito) {
-      showSuccessSnackBar(
-        context,
-        widget.postreId == null ? 'Postre creado' : 'Cambios guardados',
-      );
-      Navigator.pop(context);
-    } else {
-      final error = provider.error ?? 'No fue posible guardar';
-      showErrorSnackBar(context, error);
-    }
+    Navigator.of(context).pop(success);
   }
 }

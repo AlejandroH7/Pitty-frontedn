@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:pitty_app/core/utils/date_formatter.dart';
-import 'package:pitty_app/core/widgets/app_loading.dart';
-import 'package:pitty_app/core/widgets/app_search_field.dart';
-import 'package:pitty_app/core/widgets/empty_state.dart';
-import 'package:pitty_app/core/widgets/error_state.dart';
-import 'package:pitty_app/core/widgets/pagination_footer.dart';
-import 'package:pitty_app/providers/clientes_provider.dart';
-import 'package:pitty_app/routes/app_router.dart';
 import 'package:provider/provider.dart';
 
-class ClientesListPage extends StatefulWidget {
-  const ClientesListPage({super.key});
+import '../../core/utils/date_formatter.dart';
+import '../../core/widgets/app_loading.dart';
+import '../../core/widgets/app_search_field.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/error_state.dart';
+import '../../core/widgets/pagination_footer.dart';
+import 'evento_detail_page.dart';
+import 'evento_form_page.dart';
+import 'package:pitty_app/providers/eventos_provider.dart';
+
+class EventosListPage extends StatefulWidget {
+  const EventosListPage({super.key});
 
   @override
-  State<ClientesListPage> createState() => _ClientesListPageState();
+  State<EventosListPage> createState() => _EventosListPageState();
 }
 
-class _ClientesListPageState extends State<ClientesListPage> {
+class _EventosListPageState extends State<EventosListPage> {
   late final TextEditingController _searchController;
 
   @override
@@ -24,7 +26,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
     super.initState();
     _searchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ClientesProvider>().cargar();
+      context.read<EventosProvider>().cargar();
     });
   }
 
@@ -37,19 +39,18 @@ class _ClientesListPageState extends State<ClientesListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientes')),
+      appBar: AppBar(title: const Text('Eventos')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await Navigator.of(context).pushNamed<bool>(
-            AppRoutes.clienteForm,
-            arguments: const ClienteFormArgs(),
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (_) => const EventoFormPage()),
           );
-          _handleFormResult(result);
+          _handleResult(result);
         },
-        label: const Text('Nuevo cliente'),
-        icon: const Icon(Icons.person_add),
+        label: const Text('Nuevo evento'),
+        icon: const Icon(Icons.event_available),
       ),
-      body: Consumer<ClientesProvider>(
+      body: Consumer<EventosProvider>(
         builder: (context, controller, _) {
           _maybeShowError(controller.error);
 
@@ -70,7 +71,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: AppSearchField(
-                  label: 'Buscar por nombre o telefono',
+                  label: 'Buscar evento',
                   controller: _searchController,
                   onChanged: controller.buscar,
                 ),
@@ -82,25 +83,30 @@ class _ClientesListPageState extends State<ClientesListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay clientes registrados.')
+                    ? const EmptyState(message: 'No hay eventos programados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {
-                          final cliente = items[index];
-                          return ListTile(
-                            title: Text(cliente.nombre),
-                            subtitle: Text(cliente.telefono ?? 'Sin telefono'),
-                            trailing: Text(formatDate(cliente.createdAt)),
-                            onTap: () async {
-                              final result = await Navigator.of(context).pushNamed<bool>(
-                                AppRoutes.clienteDetail,
-                                arguments: ClienteDetailArgs(clienteId: cliente.id),
-                              );
-                              _handleFormResult(result);
-                            },
+                          final evento = items[index];
+                          return Card(
+                            child: ListTile(
+                              title: Text(evento.titulo),
+                              subtitle: Text(
+                                '${evento.lugar ?? 'Sin lugar'}\n${formatDateTime(evento.fechaHora)}'
+                                '${evento.pedidoCliente != null ? '\nPedido: ${evento.pedidoCliente}' : ''}',
+                              ),
+                              onTap: () async {
+                                final result = await Navigator.of(context).push<bool>(
+                                  MaterialPageRoute(
+                                    builder: (_) => EventoDetailPage(eventoId: evento.id),
+                                  ),
+                                );
+                                _handleResult(result);
+                              },
+                            ),
                           );
                         },
-                        separatorBuilder: (_, __) => const Divider(),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemCount: items.length,
                       ),
               ),
@@ -126,18 +132,17 @@ class _ClientesListPageState extends State<ClientesListPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.replaceAll('Exception: ', ''))),
       );
-      context.read<ClientesProvider>().limpiarError();
+      context.read<EventosProvider>().limpiarError();
     });
   }
 
-  void _handleFormResult(bool? result) {
+  void _handleResult(bool? result) {
     if (result == null) return;
-    final message = result ? 'Guardado' : 'Error (simulado)';
-    final colorScheme = Theme.of(context).colorScheme;
+    final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: result ? colorScheme.primary : colorScheme.error,
+        content: Text(result ? 'Guardado' : 'Error (simulado)'),
+        backgroundColor: result ? scheme.primary : scheme.error,
       ),
     );
   }

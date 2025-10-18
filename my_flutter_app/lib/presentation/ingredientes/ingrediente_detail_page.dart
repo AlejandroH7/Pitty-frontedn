@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:pitty_app/core/utils/date_formatter.dart';
-import 'package:pitty_app/providers/clientes_provider.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/data/models/ingrediente.dart';
+import 'package:pitty_app/providers/ingredientes_provider.dart';
 import 'package:pitty_app/routes/app_router.dart';
 import 'package:provider/provider.dart';
 
-class ClienteDetailPage extends StatefulWidget {
-  const ClienteDetailPage({super.key, required this.clienteId});
+class IngredienteDetailPage extends StatefulWidget {
+  const IngredienteDetailPage({super.key, required this.ingredienteId});
 
-  final int clienteId;
+  final int ingredienteId;
 
   @override
-  State<ClienteDetailPage> createState() => _ClienteDetailPageState();
+  State<IngredienteDetailPage> createState() => _IngredienteDetailPageState();
 }
 
-class _ClienteDetailPageState extends State<ClienteDetailPage> {
-  late Future _future;
+class _IngredienteDetailPageState extends State<IngredienteDetailPage> {
+  late Future<Ingrediente> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = context.read<ClientesProvider>().obtener(widget.clienteId);
+    _future = context.read<IngredientesProvider>().obtener(widget.ingredienteId);
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalle de cliente')),
-      body: FutureBuilder(
+      appBar: AppBar(title: const Text('Detalle de ingrediente')),
+      body: FutureBuilder<Ingrediente>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
@@ -36,9 +38,9 @@ class _ClienteDetailPageState extends State<ClienteDetailPage> {
           if (snapshot.hasError) {
             return Center(child: Text('Error al cargar: ${snapshot.error}'));
           }
-          final cliente = snapshot.data;
-          if (cliente == null) {
-            return const Center(child: Text('Cliente no encontrado'));
+          final ingrediente = snapshot.data;
+          if (ingrediente == null) {
+            return const Center(child: Text('Ingrediente no encontrado'));
           }
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -48,19 +50,34 @@ class _ClienteDetailPageState extends State<ClienteDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      cliente.nombre,
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          ingrediente.nombre,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        StatusChip(
+                          label: ingrediente.activo ? 'Activo' : 'Inactivo',
+                          color: ingrediente.activo
+                              ? colorScheme.primaryContainer
+                              : colorScheme.errorContainer,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    _InfoRow(label: 'Telefono', value: cliente.telefono ?? 'Sin telefono registrado'),
-                    const SizedBox(height: 8),
-                    _InfoRow(label: 'Notas', value: cliente.notas?.isNotEmpty == true ? cliente.notas! : 'Sin notas'),
+                    _InfoRow(label: 'Unidad', value: ingrediente.unidad),
+                    _InfoRow(
+                      label: 'Stock actual',
+                      value: '${ingrediente.stockActual.toStringAsFixed(2)} ${ingrediente.unidad}',
+                    ),
+                    _InfoRow(
+                      label: 'Stock minimo',
+                      value: '${ingrediente.stockMinimo.toStringAsFixed(2)} ${ingrediente.unidad}',
+                    ),
                     const SizedBox(height: 16),
-                    _InfoRow(label: 'Creado por', value: cliente.createdBy ?? 'Sistema'),
-                    _InfoRow(label: 'Creado el', value: formatDateTime(cliente.createdAt)),
-                    _InfoRow(label: 'Actualizado por', value: cliente.updatedBy ?? 'Sistema'),
-                    _InfoRow(label: 'Actualizado el', value: formatDateTime(cliente.updatedAt)),
+                    _InfoRow(label: 'Creado el', value: formatDateTime(ingrediente.createdAt)),
+                    _InfoRow(label: 'Actualizado el', value: formatDateTime(ingrediente.updatedAt)),
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -68,8 +85,8 @@ class _ClienteDetailPageState extends State<ClienteDetailPage> {
                         TextButton.icon(
                           onPressed: () async {
                             final result = await Navigator.of(context).pushNamed<bool>(
-                              AppRoutes.clienteForm,
-                              arguments: ClienteFormArgs(cliente: cliente),
+                              AppRoutes.ingredienteForm,
+                              arguments: IngredienteFormArgs(ingrediente: ingrediente),
                             );
                             _handleResult(result);
                           },
@@ -82,8 +99,8 @@ class _ClienteDetailPageState extends State<ClienteDetailPage> {
                             final confirm = await showDialog<bool>(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title: const Text('Eliminar cliente'),
-                                content: Text('Deseas eliminar a ${cliente.nombre}?'),
+                                title: const Text('Eliminar ingrediente'),
+                                content: Text('Eliminar ${ingrediente.nombre}?'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context, false),
@@ -97,7 +114,7 @@ class _ClienteDetailPageState extends State<ClienteDetailPage> {
                               ),
                             );
                             if (confirm == true) {
-                              final success = await context.read<ClientesProvider>().eliminar(cliente.id);
+                              final success = await context.read<IngredientesProvider>().eliminar(ingrediente.id);
                               if (!mounted) return;
                               Navigator.of(context).pop(success);
                             }
@@ -136,7 +153,6 @@ class _InfoRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 140,

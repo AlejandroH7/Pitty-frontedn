@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pitty_app/core/utils/validators.dart';
+import 'package:pitty_app/data/models/cliente.dart';
+import 'package:pitty_app/providers/clientes_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/app_primary_button.dart';
-import '../../core/widgets/app_text_field.dart';
-import '../../presentation/shared/snackbars.dart';
-import '../../providers/clientes_provider.dart';
-
 class ClienteFormPage extends StatefulWidget {
-  const ClienteFormPage({super.key, this.clienteId});
+  const ClienteFormPage({super.key, this.cliente});
 
-  final int? clienteId;
+  final Cliente? cliente;
 
   @override
   State<ClienteFormPage> createState() => _ClienteFormPageState();
@@ -17,26 +15,17 @@ class ClienteFormPage extends StatefulWidget {
 
 class _ClienteFormPageState extends State<ClienteFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
-  final _telefonoController = TextEditingController();
-  final _notasController = TextEditingController();
-  bool _initialized = false;
+  late final TextEditingController _nombreController;
+  late final TextEditingController _telefonoController;
+  late final TextEditingController _notasController;
+  bool _simulateError = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      if (widget.clienteId != null) {
-        final existente =
-            context.read<ClientesProvider>().obtenerPorId(widget.clienteId!);
-        if (existente != null) {
-          _nombreController.text = existente.nombre;
-          _telefonoController.text = existente.telefono ?? '';
-          _notasController.text = existente.notas ?? '';
-        }
-      }
-    }
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.cliente?.nombre ?? '');
+    _telefonoController = TextEditingController(text: widget.cliente?.telefono ?? '');
+    _notasController = TextEditingController(text: widget.cliente?.notas ?? '');
   }
 
   @override
@@ -49,97 +38,74 @@ class _ClienteFormPageState extends State<ClienteFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ClientesProvider>();
-    final isEdit = widget.clienteId != null;
+    final editing = widget.cliente != null;
+    final controller = context.watch<ClientesProvider>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEdit ? 'Editar cliente' : 'Nuevo cliente'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTextField(
-                controller: _nombreController,
-                label: 'Nombre *',
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El nombre es obligatorio';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Debe tener al menos 2 caracteres';
-                  }
-                  return null;
-                },
+      appBar: AppBar(title: Text(editing ? 'Editar cliente' : 'Nuevo cliente')),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            TextFormField(
+              controller: _nombreController,
+              decoration: const InputDecoration(labelText: 'Nombre *'),
+              validator: (value) {
+                final requiredResult = requiredField(value, message: 'El nombre es obligatorio');
+                if (requiredResult != null) return requiredResult;
+                if ((value ?? '').length > 120) {
+                  return 'El nombre no debe exceder 120 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _telefonoController,
+              decoration: const InputDecoration(labelText: 'Telefono'),
+              maxLength: 30,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _notasController,
+              decoration: const InputDecoration(labelText: 'Notas'),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile.adaptive(
+              value: _simulateError,
+              onChanged: (value) => setState(() => _simulateError = value),
+              title: const Text('Simular error al guardar'),
+              subtitle: const Text('Util para probar el estado "Error (simulado)"'),
+            ),
+            const SizedBox(height: 16),
+            if (controller.loading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12.0),
+                child: Text('Cargando...'),
               ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _telefonoController,
-                label: 'Teléfono',
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return null;
-                  }
-                  final pattern = RegExp(r'^[- +()0-9]{6,20}$');
-                  if (!pattern.hasMatch(value.trim())) {
-                    return 'Formato de teléfono no válido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _notasController,
-                label: 'Notas',
-                keyboardType: TextInputType.multiline,
-                maxLines: 4,
-              ),
-              const SizedBox(height: 24),
-              AppPrimaryButton(
-                label: isEdit ? 'Guardar cambios' : 'Crear cliente',
-                isLoading: provider.isSaving,
-                onPressed: provider.isSaving ? null : _guardar,
-              ),
-              if (provider.error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    provider.error!,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
-                ),
-            ],
-          ),
+            FilledButton.icon(
+              onPressed: controller.loading ? null : _submit,
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _guardar() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final provider = context.read<ClientesProvider>();
-    final exito = await provider.guardar(
-      id: widget.clienteId,
+    final controller = context.read<ClientesProvider>();
+    final success = await controller.guardar(
+      id: widget.cliente?.id,
       nombre: _nombreController.text,
       telefono: _telefonoController.text,
       notas: _notasController.text,
+      simulateError: _simulateError,
     );
     if (!mounted) return;
-    if (exito) {
-      showSuccessSnackBar(
-        context,
-        widget.clienteId == null ? 'Cliente guardado' : 'Cambios guardados',
-      );
-      Navigator.pop(context);
-    } else {
-      final error = provider.error ?? 'No fue posible guardar';
-      showErrorSnackBar(context, error);
-    }
+    Navigator.of(context).pop(success);
   }
 }
