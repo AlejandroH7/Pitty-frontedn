@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../core/widgets/status_chip.dart';
-import '../../data/models/models.dart';
-import 'postre_form_page.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/data/models/models.dart';
+import 'package:pitty_app/presentation/postres/postre_form_page.dart';
 import 'package:pitty_app/providers/postres_provider.dart';
-import '../recetas/receta_item_form.dart';
+import 'package:pitty_app/presentation/recetas/receta_item_form.dart';
 
 class PostreDetailPage extends StatefulWidget {
   const PostreDetailPage({super.key, required this.postreId});
@@ -163,7 +163,7 @@ class _PostreDetailPageState extends State<PostreDetailPage> {
                     final receta = snapshot.data;
                     final items = receta?.items ?? [];
                     if (items.isEmpty) {
-                      return const EmptyState(message: 'Receta vacia. Agrega ingredientes.');
+                      return const EmptyState(title: 'Receta vacia', message: 'Agrega ingredientes.');
                     }
                     return Column(
                       children: [
@@ -287,3 +287,5 @@ class _PostreDetailPageState extends State<PostreDetailPage> {
     );
   }
 }
+
+

@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/clientes_repository.dart';
 
-import 'in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
 
 class ClientesRepositoryMem implements ClientesRepository {
   ClientesRepositoryMem(this._store);
@@ -87,3 +87,4 @@ class ClientesRepositoryMem implements ClientesRepository {
     await Future.delayed(Duration(milliseconds: short ? 200 : 350));
   }
 }
+

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../core/utils/validators.dart';
-import '../../data/models/models.dart';
+import 'package:pitty_app/core/utils/validators.dart';
+import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/providers/postres_provider.dart';
 
 class RecetaItemForm extends StatefulWidget {
@@ -142,3 +142,4 @@ class _RecetaItemFormState extends State<RecetaItemForm> {
     }
   }
 }
+

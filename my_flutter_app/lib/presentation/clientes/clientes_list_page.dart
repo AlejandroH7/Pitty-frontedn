@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pitty_app/core/utils/date_formatter.dart';
 import 'package:pitty_app/core/widgets/app_loading.dart';
 import 'package:pitty_app/core/widgets/app_search_field.dart';
@@ -82,7 +82,7 @@ class _ClientesListPageState extends State<ClientesListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay clientes registrados.')
+                    ? const EmptyState(title: 'Sin clientes', message: 'No hay clientes registrados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {

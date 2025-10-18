@@ -1,69 +1,69 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/theme/app_theme.dart';
-import 'data/repositories/interfaces/clientes_repository.dart';
-import 'data/repositories/interfaces/ingredientes_repository.dart';
-import 'data/repositories/interfaces/postres_repository.dart';
-import 'data/repositories/interfaces/recetas_repository.dart';
-import 'data/repositories/interfaces/pedidos_repository.dart';
-import 'data/repositories/interfaces/eventos_repository.dart';
-import 'data/repositories/memory/clientes_repository_mem.dart';
-import 'data/repositories/memory/ingredientes_repository_mem.dart';
-import 'data/repositories/memory/postres_repository_mem.dart';
-import 'data/repositories/memory/recetas_repository_mem.dart';
-import 'data/repositories/memory/pedidos_repository_mem.dart';
-import 'data/repositories/memory/eventos_repository_mem.dart';
-import 'data/repositories/memory/in_memory_data_source.dart';
-import 'providers/clientes_provider.dart';
-import 'providers/ingredientes_provider.dart';
-import 'providers/postres_provider.dart';
-import 'providers/pedidos_provider.dart';
-import 'providers/eventos_provider.dart';
-import 'routes/app_router.dart';
+import 'package:pitty_app/core/theme/app_theme.dart';
+import 'package:pitty_app/data/repositories/interfaces/clientes_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/eventos_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/ingredientes_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/postres_repository.dart';
+import 'package:pitty_app/data/repositories/interfaces/recetas_repository.dart';
+import 'package:pitty_app/data/repositories/memory/clientes_repository_mem.dart';
+import 'package:pitty_app/data/repositories/memory/eventos_repository_mem.dart';
+import 'package:pitty_app/data/repositories/memory/ingredientes_repository_mem.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/memory/postres_repository_mem.dart';
+import 'package:pitty_app/data/repositories/memory/recetas_repository_mem.dart';
+import 'package:pitty_app/data/repositories/pedido_repository.dart';
+import 'package:pitty_app/data/repositories/pedido_repository_mem.dart';
+import 'package:pitty_app/presentation/shell/welcome_page.dart';
+import 'package:pitty_app/providers/clientes_provider.dart';
+import 'package:pitty_app/providers/eventos_provider.dart';
+import 'package:pitty_app/providers/ingredientes_provider.dart';
+import 'package:pitty_app/providers/pedidos_provider.dart';
+import 'package:pitty_app/providers/postres_provider.dart';
+import 'package:pitty_app/routes/app_router.dart';
 
 void main() {
   final store = InMemoryDataSource();
-  final clientesRepository = ClientesRepositoryMem(store);
-  final ingredientesRepository = IngredientesRepositoryMem(store);
-  final postresRepository = PostresRepositoryMem(store);
-  final recetasRepository = RecetasRepositoryMem(store, ingredientesRepository);
-  final pedidosRepository = PedidosRepositoryMem(store);
-  final eventosRepository = EventosRepositoryMem(store);
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<ClientesRepository>.value(value: clientesRepository),
-        Provider<IngredientesRepository>.value(value: ingredientesRepository),
-        Provider<PostresRepository>.value(value: postresRepository),
-        Provider<RecetasRepository>.value(value: recetasRepository),
-        Provider<PedidosRepository>.value(value: pedidosRepository),
-        Provider<EventosRepository>.value(value: eventosRepository),
+        Provider<ClientesRepository>(create: (_) => ClientesRepositoryMem(store)),
+        Provider<IngredientesRepository>(create: (_) => IngredientesRepositoryMem(store)),
+        Provider<PostresRepository>(create: (_) => PostresRepositoryMem(store)),
+        Provider<RecetasRepository>(
+          create: (context) => RecetasRepositoryMem(
+            store,
+            context.read<IngredientesRepository>(),
+          ),
+        ),
+        Provider<PedidoRepository>(create: (_) => PedidoRepositoryMem(store)),
+        Provider<EventosRepository>(create: (_) => EventosRepositoryMem(store)),
         ChangeNotifierProvider(
-          create: (_) => ClientesProvider(clientesRepository),
+          create: (context) => ClientesProvider(context.read<ClientesRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (_) => IngredientesProvider(ingredientesRepository),
+          create: (context) => IngredientesProvider(context.read<IngredientesRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (_) => PostresProvider(
-            postresRepository,
-            recetasRepository,
-            ingredientesRepository,
+          create: (context) => PostresProvider(
+            context.read<PostresRepository>(),
+            context.read<RecetasRepository>(),
+            context.read<IngredientesRepository>(),
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => PedidosProvider(
-            pedidosRepository,
-            clientesRepository,
-            postresRepository,
+          create: (context) => PedidosProvider(
+            context.read<PedidoRepository>(),
+            context.read<ClientesRepository>(),
+            context.read<PostresRepository>(),
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => EventosProvider(
-            eventosRepository,
-            pedidosRepository,
+          create: (context) => EventosProvider(
+            context.read<EventosRepository>(),
+            context.read<PedidoRepository>(),
           ),
         ),
       ],
@@ -81,8 +81,12 @@ class PittyApp extends StatelessWidget {
       title: 'Pitty',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      initialRoute: AppRoutes.welcome,
+      home: const WelcomePage(),
       onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
 }
+
+
+
+

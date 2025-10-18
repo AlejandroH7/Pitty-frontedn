@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../core/widgets/status_chip.dart';
-import '../../data/models/pedido.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/data/models/pedido.dart';
 import 'package:pitty_app/providers/pedidos_provider.dart';
 
 class PedidoDetailPage extends StatefulWidget {
@@ -118,7 +118,7 @@ class _PedidoDetailPageState extends State<PedidoDetailPage> {
               Text('Items del pedido', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               if (pedido.items.isEmpty)
-                const EmptyState(message: 'El pedido no tiene Items.')
+                const EmptyState(title: 'Sin items', message: 'El pedido no tiene items.')
               else
                 ...pedido.items.map(
                   (item) => Card(
@@ -201,3 +201,4 @@ class _PedidoDetailPageState extends State<PedidoDetailPage> {
     );
   }
 }
+

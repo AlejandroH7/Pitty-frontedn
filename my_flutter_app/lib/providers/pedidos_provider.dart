@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/clientes_repository.dart';
-import 'package:pitty_app/data/repositories/interfaces/pedidos_repository.dart';
+import 'package:pitty_app/data/repositories/pedido_repository.dart';
 import 'package:pitty_app/data/repositories/interfaces/postres_repository.dart';
 
 class PedidosProvider extends ChangeNotifier {
   PedidosProvider(this._repository, this._clientesRepository, this._postresRepository);
 
-  final PedidosRepository _repository;
+  final PedidoRepository _repository;
   final ClientesRepository _clientesRepository;
   final PostresRepository _postresRepository;
 
@@ -147,3 +147,4 @@ class PedidosProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

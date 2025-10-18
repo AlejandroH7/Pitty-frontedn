@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/eventos_repository.dart';
 
-import 'in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
 
 class EventosRepositoryMem implements EventosRepository {
   EventosRepositoryMem(this._store);
@@ -99,3 +99,4 @@ class EventosRepositoryMem implements EventosRepository {
     await Future.delayed(Duration(milliseconds: short ? 180 : 320));
   }
 }
+

@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/widgets/app_loading.dart';
-import '../../core/widgets/app_search_field.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../core/widgets/error_state.dart';
-import '../../core/widgets/pagination_footer.dart';
-import 'evento_detail_page.dart';
-import 'evento_form_page.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/widgets/app_loading.dart';
+import 'package:pitty_app/core/widgets/app_search_field.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/core/widgets/error_state.dart';
+import 'package:pitty_app/core/widgets/pagination_footer.dart';
+import 'package:pitty_app/presentation/eventos/evento_detail_page.dart';
+import 'package:pitty_app/presentation/eventos/evento_form_page.dart';
 import 'package:pitty_app/providers/eventos_provider.dart';
 
 class EventosListPage extends StatefulWidget {
@@ -83,7 +83,7 @@ class _EventosListPageState extends State<EventosListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay eventos programados.')
+                    ? const EmptyState(title: 'Sin eventos', message: 'No hay eventos programados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {
@@ -147,3 +147,5 @@ class _EventosListPageState extends State<EventosListPage> {
     );
   }
 }
+
+

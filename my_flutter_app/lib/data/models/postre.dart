@@ -1,4 +1,4 @@
-import 'receta.dart';
+﻿import 'package:pitty_app/data/models/receta.dart';
 
 class Postre {
   const Postre({
@@ -43,3 +43,4 @@ class Postre {
     );
   }
 }
+

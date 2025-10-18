@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/utils/validators.dart';
-import '../../data/models/evento.dart';
-import '../../data/models/pedido.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/utils/validators.dart';
+import 'package:pitty_app/data/models/evento.dart';
+import 'package:pitty_app/data/models/pedido.dart';
 import 'package:pitty_app/providers/eventos_provider.dart';
 
 class EventoFormPage extends StatefulWidget {
@@ -191,3 +191,4 @@ class _EventoFormPageState extends State<EventoFormPage> {
     );
   }
 }
+

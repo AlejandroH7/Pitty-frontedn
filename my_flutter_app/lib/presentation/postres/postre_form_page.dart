@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/validators.dart';
-import '../../data/models/postre.dart';
+import 'package:pitty_app/core/utils/validators.dart';
+import 'package:pitty_app/data/models/postre.dart';
 import 'package:pitty_app/providers/postres_provider.dart';
 
 class PostreFormPage extends StatefulWidget {
@@ -123,3 +123,4 @@ class _PostreFormPageState extends State<PostreFormPage> {
     Navigator.of(context).pop(success);
   }
 }
+

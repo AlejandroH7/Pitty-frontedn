@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../data/models/evento.dart';
-import 'evento_form_page.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/data/models/evento.dart';
+import 'package:pitty_app/presentation/eventos/evento_form_page.dart';
 import 'package:pitty_app/providers/eventos_provider.dart';
 
 class EventoDetailPage extends StatefulWidget {
@@ -41,7 +41,7 @@ class _EventoDetailPageState extends State<EventoDetailPage> {
           }
           final evento = snapshot.data;
           if (evento == null) {
-            return const EmptyState(message: 'Evento no encontrado');
+            return const EmptyState(title: 'Evento no encontrado');
           }
           return ListView(
             padding: const EdgeInsets.all(16.0),
@@ -158,3 +158,5 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
+

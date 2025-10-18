@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/eventos_repository.dart';
-import 'package:pitty_app/data/repositories/interfaces/pedidos_repository.dart';
+import 'package:pitty_app/data/repositories/pedido_repository.dart';
 
 class EventosProvider extends ChangeNotifier {
-  EventosProvider(this._repository, this._pedidosRepository);
+  EventosProvider(this._repository, this._pedidoRepository);
 
   final EventosRepository _repository;
-  final PedidosRepository _pedidosRepository;
+  final PedidoRepository _pedidoRepository;
 
   final List<Evento> _eventos = [];
   bool _loading = false;
@@ -113,7 +113,7 @@ class EventosProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<Pedido>> listarPedidos() => _pedidosRepository.listar();
+  Future<List<Pedido>> listarPedidos() => _pedidoRepository.listar();
 
   void limpiarError() {
     _error = null;
@@ -125,3 +125,5 @@ class EventosProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+

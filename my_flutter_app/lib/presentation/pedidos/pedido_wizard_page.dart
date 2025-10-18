@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/utils/validators.dart';
-import '../../data/models/models.dart';
-import '../../data/repositories/pedido_repository.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/utils/validators.dart';
+import 'package:pitty_app/data/models/models.dart';
+import 'package:pitty_app/data/repositories/pedido_repository.dart';
 import 'package:pitty_app/providers/pedidos_provider.dart';
+import 'package:pitty_app/presentation/pedidos/widgets/pedido_item_input.dart' as pedido_widgets;
 
 class PedidoWizardPage extends StatefulWidget {
   const PedidoWizardPage({super.key});
@@ -131,7 +132,7 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_items.isEmpty)
-          const EmptyState(message: 'Agrega al menos un postre al pedido.')
+          const EmptyState(title: 'Sin items', message: 'Agrega al menos un postre al pedido.')
         else
           ..._items.asMap().entries.map(
             (entry) {
@@ -224,7 +225,7 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
         Text('Resumen de Items', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (_items.isEmpty)
-          const EmptyState(message: 'Sin Items')
+          const EmptyState(title: 'Sin items', message: 'Agrega postres para ver el resumen.')
         else
           ..._items.map((item) {
             final postre = _postres.firstWhere((p) => p.id == item.postreId);
@@ -333,14 +334,14 @@ class _PedidoItemDialog extends StatefulWidget {
 class _PedidoItemDialogState extends State<_PedidoItemDialog> {
   final _formKey = GlobalKey<FormState>();
   late int? _postreId;
-  late final TextEditingController _cantidadController;
+  late int _cantidad;
   late final TextEditingController _precioController;
 
   @override
   void initState() {
     super.initState();
     _postreId = widget.initial?.postreId ?? (widget.postres.isNotEmpty ? widget.postres.first.id : null);
-    _cantidadController = TextEditingController(text: widget.initial?.cantidad.toString() ?? '1');
+    _cantidad = widget.initial?.cantidad ?? 1;
     _precioController = TextEditingController(
       text: widget.initial?.precioUnitario.toStringAsFixed(2) ??
           (_postreSeleccionado?.precio.toStringAsFixed(2) ?? '0'),
@@ -377,17 +378,33 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
               validator: (value) => value == null ? 'Selecciona un postre' : null,
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _cantidadController,
-              decoration: const InputDecoration(labelText: 'Cantidad *'),
-              keyboardType: TextInputType.number,
+            FormField<int>(
+              initialValue: _cantidad,
               validator: (value) {
-                final number = int.tryParse(value ?? '');
-                if (number == null || number < 1) {
+                if ((value ?? 0) < 1) {
                   return 'La cantidad debe ser mayor a 0';
                 }
                 return null;
               },
+              builder: (field) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  pedido_widgets.PedidoItemInput(
+                    onChanged: (value) {
+                      field.didChange(value);
+                      _cantidad = value;
+                    },
+                  ),
+                  if (field.hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        field.errorText!,
+                        style: TextStyle(color: Theme.of(field.context).colorScheme.error),
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -411,7 +428,7 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
               context,
               _PedidoItemDraft(
                 postreId: _postreId!,
-                cantidad: int.parse(_cantidadController.text),
+                cantidad: _cantidad,
                 precioUnitario: parseDouble(_precioController.text),
               ),
             );
@@ -422,3 +439,21 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

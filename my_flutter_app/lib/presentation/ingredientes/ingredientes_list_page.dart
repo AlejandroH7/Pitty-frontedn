@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pitty_app/core/widgets/app_loading.dart';
 import 'package:pitty_app/core/widgets/app_search_field.dart';
 import 'package:pitty_app/core/widgets/empty_state.dart';
@@ -82,7 +82,7 @@ class _IngredientesListPageState extends State<IngredientesListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay ingredientes registrados.')
+                    ? const EmptyState(title: 'Sin ingredientes', message: 'No hay ingredientes registrados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {

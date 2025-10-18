@@ -1,10 +1,10 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/recetas_repository.dart';
 import 'package:pitty_app/data/repositories/interfaces/ingredientes_repository.dart';
 
-import 'in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
 
 class RecetasRepositoryMem implements RecetasRepository {
   RecetasRepositoryMem(this._store, this._ingredientesRepository);
@@ -90,3 +90,4 @@ class RecetasRepositoryMem implements RecetasRepository {
     await Future.delayed(const Duration(milliseconds: 250));
   }
 }
+

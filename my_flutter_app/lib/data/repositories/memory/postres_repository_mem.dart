@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/interfaces/postres_repository.dart';
 
-import 'in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
 
 class PostresRepositoryMem implements PostresRepository {
   PostresRepositoryMem(this._store);
@@ -90,3 +90,4 @@ class PostresRepositoryMem implements PostresRepository {
     await Future.delayed(Duration(milliseconds: short ? 180 : 320));
   }
 }
+

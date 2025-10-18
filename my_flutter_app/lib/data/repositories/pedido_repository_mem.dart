@@ -1,12 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:pitty_app/data/models/models.dart';
-import 'package:pitty_app/data/repositories/interfaces/pedidos_repository.dart';
+import 'package:pitty_app/data/repositories/memory/in_memory_data_source.dart';
+import 'package:pitty_app/data/repositories/pedido_repository.dart';
 
-import 'in_memory_data_source.dart';
-
-class PedidosRepositoryMem implements PedidosRepository {
-  PedidosRepositoryMem(this._store);
+class PedidoRepositoryMem implements PedidoRepository {
+  PedidoRepositoryMem([InMemoryDataSource? store]) : _store = store ?? InMemoryDataSource();
 
   final InMemoryDataSource _store;
 

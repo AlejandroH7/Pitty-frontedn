@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/date_formatter.dart';
-import '../../core/widgets/app_loading.dart';
-import '../../core/widgets/app_search_field.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../core/widgets/error_state.dart';
-import '../../core/widgets/pagination_footer.dart';
-import '../../core/widgets/status_chip.dart';
-import '../../data/models/pedido.dart';
-import 'pedido_detail_page.dart';
-import 'pedido_wizard_page.dart';
+import 'package:pitty_app/core/utils/date_formatter.dart';
+import 'package:pitty_app/core/widgets/app_loading.dart';
+import 'package:pitty_app/core/widgets/app_search_field.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
+import 'package:pitty_app/core/widgets/error_state.dart';
+import 'package:pitty_app/core/widgets/pagination_footer.dart';
+import 'package:pitty_app/core/widgets/status_chip.dart';
+import 'package:pitty_app/data/models/pedido.dart';
+import 'package:pitty_app/presentation/pedidos/pedido_detail_page.dart';
+import 'package:pitty_app/presentation/pedidos/pedido_wizard_page.dart';
 import 'package:pitty_app/providers/pedidos_provider.dart';
 
 class PedidosListPage extends StatefulWidget {
@@ -122,7 +122,7 @@ class _PedidosListPageState extends State<PedidosListPage> {
                 ),
               Expanded(
                 child: items.isEmpty
-                    ? const EmptyState(message: 'No hay pedidos registrados.')
+                    ? const EmptyState(title: 'Sin pedidos', message: 'No hay pedidos registrados.')
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemCount: items.length,
@@ -233,3 +233,5 @@ class _DateFilterButton extends StatelessWidget {
     );
   }
 }
+
+
