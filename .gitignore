@@ -42,3 +42,4 @@ ios/build/
 # Simbolicación / ofuscación
 app.*.symbols
 app.*.map.json
+android/local.properties
