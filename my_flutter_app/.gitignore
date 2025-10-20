@@ -1,0 +1,44 @@
+# ---- Flutter/Dart project .gitignore (limpio) ----
+
+# SO
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# Ignorar TODAS las carpetas build de cualquier módulo
+**/build/
+
+# Android
+android/.gradle/
+android/app/build/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/build/
+
+# Artefactos binarios (no versionar)
+*.apk
+*.aab
+*.ipa
+
+# Simbolicación / ofuscación
+app.*.symbols
+app.*.map.json

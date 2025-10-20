@@ -1,12 +1,14 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pitty_app/core/widgets/empty_state.dart';
 
 import 'package:pitty_app/core/utils/date_formatter.dart';
 import 'package:pitty_app/core/utils/validators.dart';
 import 'package:pitty_app/data/models/models.dart';
 import 'package:pitty_app/data/repositories/pedido_repository.dart';
 import 'package:pitty_app/providers/pedidos_provider.dart';
-import 'package:pitty_app/presentation/pedidos/widgets/pedido_item_input.dart' as pedido_widgets;
+import 'package:pitty_app/presentation/pedidos/widgets/pedido_item_input.dart'
+    as pedido_widgets;
 
 class PedidoWizardPage extends StatefulWidget {
   const PedidoWizardPage({super.key});
@@ -57,14 +59,17 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
           ? const Center(child: CircularProgressIndicator())
           : Stepper(
               currentStep: _currentStep,
-              onStepCancel: _currentStep == 0 ? null : () => setState(() => _currentStep -= 1),
+              onStepCancel: _currentStep == 0
+                  ? null
+                  : () => setState(() => _currentStep -= 1),
               onStepContinue: _onContinue,
               controlsBuilder: (context, details) {
                 return Row(
                   children: [
                     FilledButton(
                       onPressed: details.onStepContinue,
-                      child: Text(_currentStep == 2 ? 'Confirmar pedido' : 'Siguiente'),
+                      child: Text(
+                          _currentStep == 2 ? 'Confirmar pedido' : 'Siguiente'),
                     ),
                     const SizedBox(width: 12),
                     if (_currentStep > 0)
@@ -111,7 +116,8 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
               .toList(),
           onChanged: (value) {
             setState(() {
-              _clienteSeleccionado = _clientes.firstWhere((cliente) => cliente.id == value);
+              _clienteSeleccionado =
+                  _clientes.firstWhere((cliente) => cliente.id == value);
             });
           },
         ),
@@ -132,7 +138,9 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_items.isEmpty)
-          const EmptyState(title: 'Sin items', message: 'Agrega al menos un postre al pedido.')
+          const EmptyState(
+              title: 'Sin items',
+              message: 'Agrega al menos un postre al pedido.')
         else
           ..._items.asMap().entries.map(
             (entry) {
@@ -174,7 +182,8 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
   }
 
   Widget _stepResumen() {
-    final total = _items.fold<double>(0, (sum, item) => sum + item.cantidad * item.precioUnitario);
+    final total = _items.fold<double>(
+        0, (sum, item) => sum + item.cantidad * item.precioUnitario);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -185,18 +194,22 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
         const SizedBox(height: 8),
         ListTile(
           title: const Text('Fecha de entrega *'),
-          subtitle: Text(_fechaEntrega != null ? formatDateTime(_fechaEntrega) : 'Selecciona una fecha'),
+          subtitle: Text(_fechaEntrega != null
+              ? formatDateTime(_fechaEntrega)
+              : 'Selecciona una fecha'),
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
               firstDate: DateTime.now(),
               lastDate: DateTime(2100),
-              initialDate: _fechaEntrega ?? DateTime.now().add(const Duration(days: 1)),
+              initialDate:
+                  _fechaEntrega ?? DateTime.now().add(const Duration(days: 1)),
             );
             if (picked != null) {
               final time = await showTimePicker(
                 context: context,
-                initialTime: TimeOfDay.fromDateTime(_fechaEntrega ?? DateTime.now()),
+                initialTime:
+                    TimeOfDay.fromDateTime(_fechaEntrega ?? DateTime.now()),
               );
               setState(() {
                 _fechaEntrega = DateTime(
@@ -222,17 +235,22 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
           title: const Text('Simular error al confirmar'),
         ),
         const SizedBox(height: 16),
-        Text('Resumen de Items', style: Theme.of(context).textTheme.titleMedium),
+        Text('Resumen de Items',
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (_items.isEmpty)
-          const EmptyState(title: 'Sin items', message: 'Agrega postres para ver el resumen.')
+          const EmptyState(
+              title: 'Sin items',
+              message: 'Agrega postres para ver el resumen.')
         else
           ..._items.map((item) {
             final postre = _postres.firstWhere((p) => p.id == item.postreId);
             return ListTile(
               title: Text(postre.nombre),
-              trailing: Text('S/ ${(item.cantidad * item.precioUnitario).toStringAsFixed(2)}'),
-              subtitle: Text('x${item.cantidad} - S/ ${item.precioUnitario.toStringAsFixed(2)}'),
+              trailing: Text(
+                  'S/ ${(item.cantidad * item.precioUnitario).toStringAsFixed(2)}'),
+              subtitle: Text(
+                  'x${item.cantidad} - S/ ${item.precioUnitario.toStringAsFixed(2)}'),
             );
           }),
         const SizedBox(height: 8),
@@ -314,7 +332,10 @@ class _PedidoWizardPageState extends State<PedidoWizardPage> {
 }
 
 class _PedidoItemDraft {
-  _PedidoItemDraft({required this.postreId, required this.cantidad, required this.precioUnitario});
+  _PedidoItemDraft(
+      {required this.postreId,
+      required this.cantidad,
+      required this.precioUnitario});
 
   final int postreId;
   final int cantidad;
@@ -340,7 +361,8 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
   @override
   void initState() {
     super.initState();
-    _postreId = widget.initial?.postreId ?? (widget.postres.isNotEmpty ? widget.postres.first.id : null);
+    _postreId = widget.initial?.postreId ??
+        (widget.postres.isNotEmpty ? widget.postres.first.id : null);
     _cantidad = widget.initial?.cantidad ?? 1;
     _precioController = TextEditingController(
       text: widget.initial?.precioUnitario.toStringAsFixed(2) ??
@@ -349,7 +371,8 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
   }
 
   Postre? get _postreSeleccionado =>
-      widget.postres.firstWhere((postre) => postre.id == _postreId, orElse: () => widget.postres.first);
+      widget.postres.firstWhere((postre) => postre.id == _postreId,
+          orElse: () => widget.postres.first);
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +388,8 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
               items: widget.postres
                   .map((postre) => DropdownMenuItem(
                         value: postre.id,
-                        child: Text('${postre.nombre} - S/ ${postre.precio.toStringAsFixed(2)}'),
+                        child: Text(
+                            '${postre.nombre} - S/ ${postre.precio.toStringAsFixed(2)}'),
                       ))
                   .toList(),
               onChanged: (value) {
@@ -375,7 +399,8 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
                   _precioController.text = precio.toStringAsFixed(2);
                 });
               },
-              validator: (value) => value == null ? 'Selecciona un postre' : null,
+              validator: (value) =>
+                  value == null ? 'Selecciona un postre' : null,
             ),
             const SizedBox(height: 16),
             FormField<int>(
@@ -400,7 +425,8 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         field.errorText!,
-                        style: TextStyle(color: Theme.of(field.context).colorScheme.error),
+                        style: TextStyle(
+                            color: Theme.of(field.context).colorScheme.error),
                       ),
                     ),
                 ],
@@ -410,8 +436,10 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
             TextFormField(
               controller: _precioController,
               decoration: const InputDecoration(labelText: 'Precio unitario *'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              validator: (value) => positiveNumber(value, message: 'Precio invalido'),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              validator: (value) =>
+                  positiveNumber(value, message: 'Precio invalido'),
             ),
           ],
         ),
@@ -439,21 +467,3 @@ class _PedidoItemDialogState extends State<_PedidoItemDialog> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
